@@ -1,6 +1,10 @@
 import { Request, Response, NextFunction } from 'express';
 import { Leave } from '../../models/leave.model';
 import { User } from '../../models/user.model';
+import { Attendance } from '../../models/attendance.model';
+import { LeaveBalance } from '../../models/leave-balance.model';
+import { LeavePolicy } from '../../models/leave-policy.model';
+import { Holiday } from '../../models/holiday.model';
 import { AppError } from '../../middleware/error.middleware';
 import { validationResult } from 'express-validator';
 import { sendLeaveApprovalEmail, sendLeaveRequestEmail } from '../../utils/email.utils';
@@ -43,7 +47,6 @@ export class LeaveController {
         message: 'Leave requests retrieved successfully',
       });
     } catch (error) {
-    return;
       next(error);
     }
   };
@@ -63,7 +66,6 @@ export class LeaveController {
         message: 'Leave request retrieved successfully',
       });
     } catch (error) {
-    return;
       next(error);
     }
   };
@@ -166,19 +168,56 @@ export class LeaveController {
       const { id } = req.params;
       const { approvedBy, managerNotes } = req.body;
 
-      const leave = await Leave.findByIdAndUpdate(
-        id,
-        {
-          status: 'Approved',
-          approvedBy,
-          managerNotes,
-          approvedAt: new Date(),
-        },
-        { new: true }
-      );
-
+      const leave = await Leave.findById(id);
       if (!leave) {
         throw new AppError('Leave request not found', 404, 'LEAVE_NOT_FOUND');
+      }
+
+      leave.status = 'Approved';
+      leave.approvedBy = approvedBy;
+      leave.managerNotes = managerNotes;
+      leave.approvedAt = new Date();
+      await leave.save();
+
+      // 1. Leave Balance Auto-Update Cascade
+      const year = new Date(leave.fromDate).getFullYear();
+      let balance = await LeaveBalance.findOne({ employeeId: leave.employeeId, year });
+      if (!balance) {
+        balance = await LeaveBalance.create({
+          employeeId: leave.employeeId,
+          year,
+          casualLeave: 8,
+          sickLeave: 10,
+          earnedLeave: 15,
+        });
+      }
+
+      if (leave.leaveType === 'Casual Leave') {
+        balance.casualLeave = Math.max(0, balance.casualLeave - leave.totalDays);
+      } else if (leave.leaveType === 'Sick Leave') {
+        balance.sickLeave = Math.max(0, balance.sickLeave - leave.totalDays);
+      } else if (leave.leaveType === 'Earned Leave') {
+        balance.earnedLeave = Math.max(0, balance.earnedLeave - leave.totalDays);
+      } else if (leave.leaveType === 'Unpaid Leave') {
+        balance.unpaidLeave += leave.totalDays;
+      }
+      await balance.save();
+
+      // 2. Attendance Auto-Update Cascade for every date in leave range
+      const currDate = new Date(leave.fromDate);
+      const endDate = new Date(leave.toDate);
+
+      while (currDate <= endDate) {
+        const dateStr = new Date(currDate);
+        await Attendance.findOneAndUpdate(
+          { employeeId: leave.employeeId, date: dateStr },
+          {
+            status: 'Leave',
+            totalHours: 0,
+          },
+          { upsert: true, new: true }
+        );
+        currDate.setDate(currDate.getDate() + 1);
       }
 
       // Send approval notification email asynchronously
@@ -197,7 +236,7 @@ export class LeaveController {
       res.status(200).json({
         success: true,
         data: leave,
-        message: 'Leave request approved successfully',
+        message: 'Leave request approved, balance updated, and attendance logged',
       });
     } catch (error) {
       next(error);
@@ -268,7 +307,6 @@ export class LeaveController {
         message: 'Leave request cancelled successfully',
       });
     } catch (error) {
-    return;
       next(error);
     }
   };
@@ -285,40 +323,75 @@ export class LeaveController {
         targetEmployeeId = user.employeeId.toString();
       }
 
-      const leaves = await Leave.find({
+      // Read dynamic LeavePolicy configured by SuperAdmin from MongoDB
+      let policy = await LeavePolicy.findOne({ isActive: true });
+      if (!policy) {
+        policy = await LeavePolicy.create({
+          casualLeaveDays: 12,
+          sickLeaveDays: 8,
+          earnedLeaveDays: 15,
+          unpaidLeaveDays: 0,
+          carryForwardEnabled: true,
+          leaveEncashmentEnabled: true,
+          isActive: true,
+        });
+      }
+
+      const annualCL = policy.casualLeaveDays ?? 12;
+      const annualPL = policy.earnedLeaveDays ?? 15;
+      const annualSL = policy.sickLeaveDays ?? 8;
+
+      let balance = await LeaveBalance.findOne({ employeeId: targetEmployeeId, year });
+      if (!balance) {
+        balance = await LeaveBalance.create({
+          employeeId: targetEmployeeId,
+          year,
+          casualLeave: annualCL,
+          sickLeave: annualSL,
+          earnedLeave: annualPL,
+          unpaidLeave: 0,
+        });
+      }
+
+      const approvedLeaves = await Leave.find({
         employeeId: targetEmployeeId,
         status: 'Approved',
         fromDate: { $gte: new Date(`${year}-01-01`) },
         toDate: { $lte: new Date(`${year}-12-31`) },
       });
 
-      const balance = leaves.reduce((acc: any, leave) => {
+      const usedMap = approvedLeaves.reduce((acc: any, leave) => {
         acc[leave.leaveType] = (acc[leave.leaveType] || 0) + leave.totalDays;
         return acc;
       }, {});
 
-      // Calculate remaining balance (subtract used from total)
-      const totalBalances = {
-        'Casual Leave': 12,
-        'Earned Leave': 15,
-        'Sick Leave': 6,
-        'Maternity Leave': 90,
-        'Paternity Leave': 15,
-        'Unpaid Leave': 0,
-      };
-
-      const remainingBalance: any = {};
-      for (const [leaveType, total] of Object.entries(totalBalances)) {
-        remainingBalance[leaveType] = Math.max(0, total - (balance[leaveType] || 0));
-      }
+      const usedCL = usedMap['Casual Leave'] || 0;
+      const usedPL = usedMap['Earned Leave'] || 0;
+      const usedSL = usedMap['Sick Leave'] || 0;
 
       res.status(200).json({
         success: true,
-        data: remainingBalance,
+        data: {
+          annual: {
+            CL: annualCL,
+            PL: annualPL,
+            SL: annualSL,
+          },
+          available: {
+            CL: Math.max(0, annualCL - usedCL),
+            PL: Math.max(0, annualPL - usedPL),
+            SL: Math.max(0, annualSL - usedSL),
+          },
+          used: {
+            CL: usedCL,
+            PL: usedPL,
+            SL: usedSL,
+            LWP: usedMap['Unpaid Leave'] || 0,
+          },
+        },
         message: 'Leave balance retrieved successfully',
       });
     } catch (error) {
-    return;
       next(error);
     }
   };
@@ -342,7 +415,63 @@ export class LeaveController {
         message: 'Leave approvals retrieved successfully',
       });
     } catch (error) {
-    return;
+      next(error);
+    }
+  };
+
+  // Custom SuperAdmin Setup Policy Endpoints
+  getLeavePolicy = async (_req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      let policy = await LeavePolicy.findOne({ isActive: true });
+      if (!policy) {
+        policy = await LeavePolicy.create({
+          casualLeaveDays: 8,
+          sickLeaveDays: 10,
+          earnedLeaveDays: 15,
+          unpaidLeaveDays: 0,
+          carryForwardEnabled: true,
+          leaveEncashmentEnabled: true,
+          isActive: true,
+        });
+      }
+      res.status(200).json({ success: true, data: policy });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  updateLeavePolicy = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const updateData = req.body;
+      let policy = await LeavePolicy.findOneAndUpdate({ isActive: true }, updateData, { new: true, upsert: true });
+      res.status(200).json({ success: true, data: policy, message: 'Leave policy updated successfully' });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  getHolidays = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const year = Number(req.query.year) || new Date().getFullYear();
+      const holidays = await Holiday.find({ year }).sort({ date: 1 });
+      res.status(200).json({ success: true, data: holidays });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  createHoliday = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const { name, date, type } = req.body;
+      const holidayDate = new Date(date);
+      const holiday = await Holiday.create({
+        name,
+        date: holidayDate,
+        type: type || 'public',
+        year: holidayDate.getFullYear(),
+      });
+      res.status(201).json({ success: true, data: holiday, message: 'Holiday created successfully' });
+    } catch (error) {
       next(error);
     }
   };

@@ -21,7 +21,6 @@ import {
   sendPasswordResetSuccessEmail,
 } from '../../utils/email.utils';
 
-
 // Register - Step 1: Send OTP to email without creating user
 export const register = async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -50,6 +49,13 @@ export const register = async (req: Request, res: Response, next: NextFunction) 
       throw new AppError('User with this email already exists', 400, 'USER_EXISTS');
     }
 
+    // Clear any previous unverified registration OTPs for this email
+    await OTP.deleteMany({
+      type: 'registration',
+      'metadata.email': email,
+      isVerified: false,
+    });
+
     // Generate OTP for email verification
     const otp = generateOTP();
 
@@ -57,7 +63,7 @@ export const register = async (req: Request, res: Response, next: NextFunction) 
     await OTP.create({
       type: 'registration',
       otp,
-      expiresAt: new Date(Date.now() + 5 * 60 * 1000), // 5 minutes
+      expiresAt: new Date(Date.now() + 10 * 60 * 1000), // 10 minutes
       metadata: {
         firstName,
         lastName,
@@ -202,9 +208,8 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
     // Find user
     const user = await User.findOne({ email });
     if (!user) {
-      // Log failed attempt
       await LoginHistory.create({
-        userId: new mongoose.Types.ObjectId(), // Dummy ID for tracking
+        userId: new mongoose.Types.ObjectId(),
         email,
         status: 'failed',
         failureReason: 'User not found',
@@ -247,7 +252,7 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
     const deviceInfo = parseDeviceInfo(userAgent);
 
     // Create session
-    const sessionExpiry = rememberMe ? 30 * 24 * 60 * 60 * 1000 : 24 * 60 * 60 * 1000; // 30 days or 24 hours
+    const sessionExpiry = rememberMe ? 30 * 24 * 60 * 60 * 1000 : 24 * 60 * 60 * 1000;
     const session = await Session.create({
       userId: user._id,
       token: accessToken,
@@ -319,8 +324,6 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
     console.log('Login Time:', new Date().toISOString());
     console.log('IP Address:', ipAddress);
     console.log('==========================');
-
-    // Set refresh token as HTTP-only cookie
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
@@ -352,13 +355,11 @@ export const logout = async (req: Request, res: Response, next: NextFunction) =>
   try {
     const { userId } = req.body;
 
-    // Deactivate all sessions for user
     await Session.updateMany(
       { userId, isActive: true },
       { isActive: false }
     );
 
-    // Clear refresh token cookie
     res.clearCookie('refreshToken');
 
     res.status(200).json({
@@ -380,10 +381,8 @@ export const refreshToken = async (req: Request, res: Response, next: NextFuncti
       throw new AppError('Refresh token not found', 401, 'NO_REFRESH_TOKEN');
     }
 
-    // Verify refresh token
     const payload = verifyToken(refreshToken);
 
-    // Find active session
     const session = await Session.findOne({
       refreshToken,
       isActive: true,
@@ -394,14 +393,12 @@ export const refreshToken = async (req: Request, res: Response, next: NextFuncti
       throw new AppError('Invalid or expired refresh token', 401, 'INVALID_REFRESH_TOKEN');
     }
 
-    // Generate new access token
     const newAccessToken = generateAccessToken({
       userId: payload.userId,
       email: payload.email,
       role: payload.role,
     });
 
-    // Update session with new access token
     session.token = newAccessToken;
     session.lastActivity = new Date();
     await session.save();
@@ -420,27 +417,33 @@ export const refreshToken = async (req: Request, res: Response, next: NextFuncti
 // Verify Email OTP
 export const verifyEmailOTP = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { userId, otp } = req.body;
+    const { userId, email, otp } = req.body;
 
-    // Find valid OTP
-    const otpRecord = await OTP.findOne({
-      userId,
+    let filter: any = {
       type: 'email_verification',
       otp,
       isVerified: false,
       expiresAt: { $gt: new Date() },
-    });
+    };
+
+    if (userId) {
+      filter.userId = userId;
+    } else if (email) {
+      filter['metadata.email'] = email;
+    }
+
+    const otpRecord = await OTP.findOne(filter);
 
     if (!otpRecord) {
       throw new AppError('Invalid or expired OTP', 400, 'INVALID_OTP');
     }
 
-    // Mark OTP as verified
     otpRecord.isVerified = true;
     await otpRecord.save();
 
-    // Activate user
-    await User.findByIdAndUpdate(userId, { isActive: true });
+    if (userId) {
+      await User.findByIdAndUpdate(userId, { isActive: true });
+    }
 
     res.status(200).json({
       success: true,
@@ -458,20 +461,17 @@ export const forgotPassword = async (req: Request, res: Response, next: NextFunc
 
     const user = await User.findOne({ email });
     if (!user) {
-      // Don't reveal if user exists
       throw new AppError('If an account exists with this email, a reset link has been sent.', 200, 'EMAIL_SENT');
     }
 
-    // Generate OTP
     const otp = generateOTP();
     await OTP.create({
       userId: user._id,
       type: 'password_reset',
       otp,
-      expiresAt: new Date(Date.now() + 5 * 60 * 1000), // 5 minutes
+      expiresAt: new Date(Date.now() + 10 * 60 * 1000), // 10 minutes
     });
 
-    // Send OTP email
     await sendPasswordResetOTPEmail(email, otp);
 
     res.status(200).json({
@@ -488,24 +488,20 @@ export const resetPassword = async (req: Request, res: Response, next: NextFunct
   try {
     const { email, otp, newPassword, confirmPassword } = req.body;
 
-    // Validate passwords match
     if (newPassword !== confirmPassword) {
       throw new AppError('Passwords do not match', 400, 'PASSWORD_MISMATCH');
     }
 
-    // Validate password strength
     const passwordValidation = validatePasswordStrength(newPassword);
     if (!passwordValidation.isValid) {
       throw new AppError(passwordValidation.errors.join(', '), 400, 'WEAK_PASSWORD');
     }
 
-    // Find user
     const user = await User.findOne({ email });
     if (!user) {
       throw new AppError('User not found', 404, 'USER_NOT_FOUND');
     }
 
-    // Verify OTP
     const otpRecord = await OTP.findOne({
       userId: user._id,
       type: 'password_reset',
@@ -518,17 +514,14 @@ export const resetPassword = async (req: Request, res: Response, next: NextFunct
       throw new AppError('Invalid or expired OTP', 400, 'INVALID_OTP');
     }
 
-    // Mark OTP as verified
     otpRecord.isVerified = true;
     await otpRecord.save();
 
-    // Hash new password
     const hashedPassword = await hashPassword(newPassword);
 
     // Update password safely without failing full document validation on legacy users
     await User.updateOne({ _id: user._id }, { $set: { password: hashedPassword } });
 
-    // Deactivate all sessions (force re-login)
     await Session.updateMany(
       { userId: user._id, isActive: true },
       { isActive: false }
@@ -558,59 +551,75 @@ export const resetPassword = async (req: Request, res: Response, next: NextFunct
   }
 };
 
-// Resend OTP
-export const resendOTP = async (req: Request, res: Response, next: NextFunction) => {
+// Resend OTP for Registration, Verification, or Password Reset
+export const resendOTP = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
   try {
-    const { userId, email, type } = req.body;
+    const { email, userId, type } = req.body;
 
-    let targetUserId = userId;
-    let targetEmail = email;
-
-    if (!targetUserId && targetEmail) {
-      const user = await User.findOne({ email: targetEmail });
-      if (user) {
-        targetUserId = user._id;
+    // Handle registration OTP resend (before user document creation)
+    if (type === 'registration' || (!userId && email)) {
+      const targetEmail = email;
+      if (!targetEmail) {
+        throw new AppError('Email is required to resend OTP', 400, 'MISSING_EMAIL');
       }
-    }
 
-    if (!targetUserId && !targetEmail) {
-      throw new AppError('User ID or Email is required', 400, 'MISSING_FIELDS');
-    }
+      // Find previous OTP metadata
+      const lastOtp = await OTP.findOne({
+        type: 'registration',
+        'metadata.email': targetEmail,
+      }).sort({ createdAt: -1 });
 
-    // Delete previous unverified OTPs
-    if (targetUserId) {
+      // Delete older unverified registration OTPs
       await OTP.deleteMany({
-        userId: targetUserId,
-        type,
+        type: 'registration',
+        'metadata.email': targetEmail,
         isVerified: false,
+      });
+
+      const otp = generateOTP();
+      await OTP.create({
+        type: 'registration',
+        otp,
+        expiresAt: new Date(Date.now() + 10 * 60 * 1000), // 10 minutes
+        metadata: lastOtp?.metadata || { email: targetEmail, role: 'employee' },
+        ipAddress: req.ip,
+      });
+
+      await sendVerificationOTPEmail(targetEmail, otp);
+
+      return res.status(200).json({
+        success: true,
+        message: `New verification OTP sent successfully to ${targetEmail}`,
       });
     }
 
-    // Generate new OTP
-    const otp = generateOTP();
-    await OTP.create({
-      userId: targetUserId,
+    // Handle user-bound OTP resend (email_verification or password_reset)
+    await OTP.deleteMany({
+      userId,
       type,
-      otp,
-      expiresAt: new Date(Date.now() + 5 * 60 * 1000), // 5 minutes
+      isVerified: false,
     });
 
-    // Send OTP email based on type
-    if (type === 'email_verification') {
-      const user = targetUserId ? await User.findById(targetUserId) : await User.findOne({ email: targetEmail });
-      if (user) {
+    const otp = generateOTP();
+    await OTP.create({
+      userId,
+      type,
+      otp,
+      expiresAt: new Date(Date.now() + 10 * 60 * 1000),
+    });
+
+    const user = await User.findById(userId);
+    if (user) {
+      if (type === 'email_verification') {
         await sendVerificationOTPEmail(user.email, otp);
-      }
-    } else if (type === 'password_reset') {
-      const user = targetUserId ? await User.findById(targetUserId) : await User.findOne({ email: targetEmail });
-      if (user) {
+      } else if (type === 'password_reset') {
         await sendPasswordResetOTPEmail(user.email, otp);
       }
     }
 
     res.status(200).json({
       success: true,
-      message: 'OTP sent successfully',
+      message: 'New OTP sent successfully to your email',
     });
   } catch (error) {
     next(error);

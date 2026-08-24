@@ -23,7 +23,7 @@ export const authMiddleware = (req: AuthRequest, _res: Response, next: NextFunct
   console.log('Auth middleware - Token extracted, length:', token.length);
 
   try {
-    const secret = process.env.JWT_SECRET || 'your-secret-key-change-this-in-production';
+    const secret = process.env.JWT_SECRET || 'coralGroup@ManishSharma@321otp137';
     console.log('Auth middleware - Using secret:', secret.substring(0, 10) + '...');
     
     const decoded = jwt.verify(token, secret) as {

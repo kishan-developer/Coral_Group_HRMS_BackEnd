@@ -31,7 +31,6 @@ export class EmployeeController {
         message: 'Employees retrieved successfully',
       });
     } catch (error) {
-    return;
       next(error);
     }
   };
@@ -51,7 +50,6 @@ export class EmployeeController {
         message: 'Employee retrieved successfully',
       });
     } catch (error) {
-    return;
       next(error);
     }
   };
@@ -71,7 +69,6 @@ export class EmployeeController {
         message: 'Employee retrieved successfully',
       });
     } catch (error) {
-    return;
       next(error);
     }
   };
@@ -114,7 +111,6 @@ export class EmployeeController {
         message: 'Employee created successfully',
       });
     } catch (error) {
-    return;
       next(error);
     }
   };
@@ -139,7 +135,6 @@ export class EmployeeController {
         message: 'Employee updated successfully',
       });
     } catch (error) {
-    return;
       next(error);
     }
   };
@@ -158,7 +153,6 @@ export class EmployeeController {
         message: 'Employee deleted successfully',
       });
     } catch (error) {
-    return;
       next(error);
     }
   };
@@ -174,7 +168,6 @@ export class EmployeeController {
         message: 'Department employees retrieved successfully',
       });
     } catch (error) {
-    return;
       next(error);
     }
   };
@@ -190,7 +183,6 @@ export class EmployeeController {
         message: 'Shift employees retrieved successfully',
       });
     } catch (error) {
-    return;
       next(error);
     }
   };

@@ -4,9 +4,9 @@ import dotenv from 'dotenv';
 // Load environment variables
 dotenv.config();
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-this-in-production';
-const JWT_ACCESS_EXPIRY_SECONDS = 15 * 60; // 15 minutes
-const JWT_REFRESH_EXPIRY_SECONDS = 30 * 24 * 60 * 60; // 30 days
+const JWT_SECRET = process.env.JWT_SECRET || 'coralGroup@ManishSharma@321otp137';
+const JWT_ACCESS_EXPIRY_SECONDS = 30 * 24 * 60 * 60; // 30 days
+const JWT_REFRESH_EXPIRY_SECONDS = 90 * 24 * 60 * 60; // 90 days
 
 export interface JWTPayload {
   userId: string;

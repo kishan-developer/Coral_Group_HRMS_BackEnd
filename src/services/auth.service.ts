@@ -31,14 +31,14 @@ interface AuthTokens {
 
 export class AuthService {
   private generateAccessToken(payload: TokenPayload): string {
-    return jwt.sign(payload, process.env.JWT_SECRET || 'your-secret-key-change-this-in-production', {
-      expiresIn: process.env.JWT_ACCESS_EXPIRY || '15m',
+    return jwt.sign(payload, process.env.JWT_SECRET || 'coralGroup@ManishSharma@321otp137', {
+      expiresIn: process.env.JWT_ACCESS_EXPIRY || '30d',
     } as jwt.SignOptions);
   }
 
   private generateRefreshToken(payload: TokenPayload): string {
-    return jwt.sign(payload, process.env.JWT_SECRET || 'your-secret-key-change-this-in-production', {
-      expiresIn: process.env.JWT_REFRESH_EXPIRY || '7d',
+    return jwt.sign(payload, process.env.JWT_SECRET || 'coralGroup@ManishSharma@321otp137', {
+      expiresIn: process.env.JWT_REFRESH_EXPIRY || '90d',
     } as jwt.SignOptions);
   }
 
@@ -138,7 +138,7 @@ export class AuthService {
 
   async refreshTokens(refreshToken: string): Promise<AuthTokens> {
     try {
-      const decoded = jwt.verify(refreshToken, process.env.JWT_SECRET || 'your-secret-key-change-this-in-production') as TokenPayload;
+      const decoded = jwt.verify(refreshToken, process.env.JWT_SECRET || 'coralGroup@ManishSharma@321otp137') as TokenPayload;
 
       const user = await User.findById(decoded.userId);
 

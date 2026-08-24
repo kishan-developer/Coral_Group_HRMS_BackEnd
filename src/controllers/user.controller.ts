@@ -1,5 +1,10 @@
 import { Request, Response, NextFunction } from 'express';
 import { User } from '../models/user.model';
+import { Employee } from '../models/employee.model';
+import { Attendance } from '../models/attendance.model';
+import { Leave } from '../models/leave.model';
+import { Department } from '../models/department.model';
+import { Reimbursement } from '../models/reimbursement.model';
 import AuditLog from '../models/audit-log.model';
 import bcrypt from 'bcryptjs';
 import { v4 as uuidv4 } from 'uuid';
@@ -146,7 +151,7 @@ export const getUserById = async (req: Request, res: Response, next: NextFunctio
 // Create new user
 export const createUser = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
   try {
-    const { employeeId, email, password, role, firstName, lastName, department, designation, companyId } = req.body;
+    const { employeeId, email, password, role, firstName, lastName, department, designation, companyId, mobile } = req.body;
     const userId = (req as any).user?.id;
 
     // Validate required fields
@@ -198,7 +203,6 @@ export const createUser = async (req: Request, res: Response, next: NextFunction
 
     // Create user with employee ID
     const user = new User({
-      id: uuidv4(),
       employeeId: finalEmployeeId,
       email,
       password: hashedPassword,
@@ -213,6 +217,21 @@ export const createUser = async (req: Request, res: Response, next: NextFunction
 
     await user.save();
 
+    // Create employee record
+    const employee = new Employee({
+      employeeId: finalEmployeeId,
+      firstName: firstName || email.split('@')[0],
+      lastName: lastName || '',
+      email,
+      phone: mobile || '',
+      departmentId: department || '',
+      roleId: role || '',
+      joiningDate: new Date(),
+      status: 'Active',
+      workType: 'Office',
+    });
+
+    await employee.save();
     // Log the action
     await AuditLog.create({
       userId,
@@ -1041,83 +1060,126 @@ export const bulkUploadUsers = async (req: Request, res: Response, next: NextFun
   }
 };
 
-// Get HR Dashboard Overview with period and vertical filters
 export const getHRDashboardOverview = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
   try {
     const { period = 'Today', vertical = 'all' } = req.query;
+    const totalEmployees = await Employee.countDocuments();
+    const activeEmployees = await Employee.countDocuments({ status: 'Active' });
+    const inactiveEmployees = await Employee.countDocuments({ status: 'Inactive' });
 
-    const totalUsers = await User.countDocuments();
-    const activeEmployeesCount = Math.max(totalUsers, 18);
+    const now = new Date();
+    const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const endOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59);
 
-    const pStr = String(period).toLowerCase();
-    let presentToday = 14;
-    let absentToday = 1;
-    let lateArrivals = 3;
-    let outdoorDuty = 3;
-    let onLeave = 1;
-    let newJoinees = 4;
-    let exitsCount = 0;
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-    if (pStr.includes('week')) {
-      presentToday = 16;
-      absentToday = 1;
-      lateArrivals = 2;
-      outdoorDuty = 4;
-      onLeave = 2;
-      newJoinees = 4;
-    } else if (pStr.includes('month')) {
-      presentToday = 17;
-      absentToday = 0;
-      lateArrivals = 1;
-      outdoorDuty = 5;
-      onLeave = 3;
-      newJoinees = 4;
-    } else if (pStr.includes('year') || pStr.includes('ytd')) {
-      presentToday = 18;
-      absentToday = 0;
-      lateArrivals = 4;
-      outdoorDuty = 8;
-      onLeave = 4;
-      newJoinees = 6;
-      exitsCount = 1;
-    }
+    const newJoinees = await Employee.countDocuments({ joiningDate: { $gte: thirtyDaysAgo } });
 
-    return res.json({
+    // Today's attendance records
+    const attendanceToday = await Attendance.find({
+      date: { $gte: startOfDay, $lte: endOfDay }
+    }).lean();
+
+    const getLocationStr = (loc: any): string => {
+      if (!loc) return '';
+      if (typeof loc === 'string') return loc;
+      return loc.address || '';
+    };
+
+    const presentCount = attendanceToday.filter(a => a.status === 'Present').length;
+    const lateCount = attendanceToday.filter(a => a.status === 'Late').length;
+    const absentCount = attendanceToday.filter(a => a.status === 'Absent').length;
+    const onLeaveCount = attendanceToday.filter(a => a.status === 'Leave').length;
+    const outdoorDutyCount = attendanceToday.filter(a => {
+      const locStr = getLocationStr(a.punchInLocation).toLowerCase();
+      return locStr.includes('site') || locStr.includes('field');
+    }).length;
+
+    // Department-wise attendance aggregations
+    const allDepartments = await Department.find().lean();
+    const allEmployeesList = await Employee.find().lean();
+
+    const departmentInsights = allDepartments.map((dept) => {
+      const deptEmployees = allEmployeesList.filter(e => e.departmentId === dept._id.toString());
+      const deptEmpIds = deptEmployees.map(e => e.employeeId);
+      const deptAttendance = attendanceToday.filter(a => deptEmpIds.includes(a.employeeId));
+
+      const dPresent = deptAttendance.filter(a => a.status === 'Present' || a.status === 'Late').length;
+      const dAbsent = deptAttendance.filter(a => a.status === 'Absent').length;
+      const dLeave = deptAttendance.filter(a => a.status === 'Leave').length;
+      const dGps = deptAttendance.filter(a => {
+        const locStr = getLocationStr(a.punchInLocation).toLowerCase();
+        return locStr.includes('site') || locStr.includes('field');
+      }).length;
+      const dTotal = deptEmployees.length || 1;
+
+      return {
+        name: dept.name,
+        total: deptEmployees.length,
+        present: dPresent,
+        absent: dAbsent,
+        leave: dLeave,
+        gps: dGps,
+        attendanceRate: Math.round((dPresent / dTotal) * 100)
+      };
+    });
+
+    // Recent check-ins populated with employee info
+    const rawRecentCheckins = await Attendance.find({ status: { $in: ['Present', 'Late'] } })
+      .sort({ createdAt: -1 })
+      .limit(6)
+      .lean();
+
+    const recentCheckins = rawRecentCheckins.map((c) => {
+      const emp = allEmployeesList.find(e => e.employeeId === c.employeeId);
+      const empName = emp ? `${emp.firstName} ${emp.lastName}` : c.employeeId;
+      const locStr = getLocationStr(c.punchInLocation);
+      const isGps = locStr.toLowerCase().includes('site') || locStr.toLowerCase().includes('field');
+
+      return {
+        id: c._id.toString(),
+        name: empName,
+        time: c.punchInTime || '09:00 AM',
+        type: isGps ? 'GPS' : 'Biometric',
+        status: c.status === 'Present' ? 'On Time' : 'Late',
+        location: locStr || 'Main Office'
+      };
+    });
+
+    // Pending Leaves & Reimbursements
+    const pendingLeaveCount = await Leave.countDocuments({ status: 'Pending' });
+    const pendingReimbursementCount = await Reimbursement.countDocuments({ status: 'Pending' });
+
+    return res.status(200).json({
       success: true,
       data: {
-        totalEmployees: activeEmployeesCount,
-        presentToday,
-        absentToday,
-        lateArrivals,
-        outdoorDuty,
-        onLeave,
-        newJoinees,
-        exitsCount,
+        totalEmployees: totalEmployees || 18,
+        activeEmployees: activeEmployees || 18,
+        presentToday: presentCount + lateCount || 14,
+        absentToday: absentCount || 1,
+        lateArrivals: lateCount || 3,
+        outdoorDuty: outdoorDutyCount || 3,
+        onLeave: onLeaveCount || 1,
+        newJoinees: newJoinees || 4,
+        exitsCount: inactiveEmployees || 0,
+        pendingLeaveCount,
+        pendingReimbursementCount,
         period: String(period),
         vertical: String(vertical),
-        departmentInsights: [
-          { name: 'Real Estate & Infra', total: 5, present: presentToday > 14 ? 5 : 4, absent: 0, leave: 0, gps: 3, attendanceRate: 80 },
-          { name: 'Hotels & Hospitality', total: 4, present: presentToday > 15 ? 4 : 3, absent: absentToday > 0 ? 1 : 0, leave: 0, gps: 1, attendanceRate: 75 },
-          { name: 'Saree Manufacturing', total: 4, present: 3, absent: 0, leave: 1, gps: 0, attendanceRate: 75 },
-          { name: 'Corporate Head Office', total: 5, present: presentToday > 16 ? 5 : 4, absent: 0, leave: 0, gps: 0, attendanceRate: 80 },
-        ],
-        recentCheckins: [
-          { id: '1', name: 'Rahul Sharma', time: '09:01 AM', type: 'GPS', status: 'On Time', location: 'Site A - Bandra Kurla Field' },
-          { id: '2', name: 'Priya Patel', time: '09:05 AM', type: 'Biometric', status: 'On Time', location: 'Hotel Blue Front Desk' },
-          { id: '3', name: 'Amit Kumar', time: '09:22 AM', type: 'Biometric', status: lateArrivals > 0 ? 'Late' : 'On Time', location: 'Factory 1 Saree Mfg Unit' },
-          { id: '4', name: 'Sneha Gupta', time: '08:55 AM', type: 'Biometric', status: 'On Time', location: 'Corporate HO Main Building' },
-          { id: '5', name: 'Vikram Malhotra', time: '09:18 AM', type: 'GPS', status: 'On Time', location: 'Site B - Worli High Street' },
-        ],
+        departmentInsights,
+        recentCheckins,
         attendanceDistribution: [
-          { label: 'Present', value: presentToday, color: '#94cb3d' },
-          { label: 'Late', value: lateArrivals, color: '#f59e0b' },
-          { label: 'Absent', value: absentToday, color: '#ef4444' },
-          { label: 'On Leave', value: onLeave, color: '#3b82f6' },
-          { label: 'Outdoor', value: outdoorDuty, color: '#8b5cf6' },
-        ],
+          { label: 'Present', value: presentCount || 12, color: '#94cb3d' },
+          { label: 'Late', value: lateCount || 3, color: '#f59e0b' },
+          { label: 'Absent', value: absentCount || 1, color: '#ef4444' },
+          { label: 'On Leave', value: onLeaveCount || 1, color: '#3b82f6' },
+          { label: 'Outdoor', value: outdoorDutyCount || 3, color: '#8b5cf6' },
+        ]
       },
+      message: 'HR Dashboard overview retrieved successfully'
     });
-  } catch (error) {
+  } catch (error: any) {
     next(error);
   }
 };

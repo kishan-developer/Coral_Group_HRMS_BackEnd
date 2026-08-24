@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/hrms';
+const MONGODB_URI = process.env.MONGODB_URI || process.env.MONGODB_URL || 'mongodb://127.0.0.1:27017/hrms';
 
 export const connectDatabase = async (): Promise<boolean> => {
   try {
@@ -13,12 +13,24 @@ export const connectDatabase = async (): Promise<boolean> => {
       minPoolSize: 5,
     });
 
-    await mongoose.connect(MONGODB_URI);
-
-    console.log('MongoDB connection successful');
+    console.log('✅ MongoDB connection successful');
     return true;
   } catch (error) {
-    console.error('MongoDB connection failed:', error);
+    console.warn('⚠️ Primary MongoDB connection failed:', (error as Error).message);
+    const localUri = 'mongodb://127.0.0.1:27017/hrms';
+    if (MONGODB_URI !== localUri) {
+      console.log('🔄 Attempting fallback connection to local MongoDB:', localUri);
+      try {
+        await mongoose.connect(localUri);
+        console.log('✅ Connected to local MongoDB fallback successfully');
+        return true;
+      } catch (localError) {
+        console.error('❌ Local MongoDB connection fallback failed as well.');
+      }
+    }
+    console.error('\n📌 Action Required for Database Access:');
+    console.error('1. Whitelist your current IP address in MongoDB Atlas (Network Access -> Add IP Address -> 0.0.0.0/0 for development): https://cloud.mongodb.com/');
+    console.error('2. Or ensure local MongoDB service is running on port 27017 (e.g., brew services start mongodb-community).\n');
     return false;
   }
 };

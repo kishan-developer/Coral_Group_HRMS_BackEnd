@@ -3,7 +3,10 @@ import cors from 'cors';
 import helmet from 'helmet';
 import dotenv from 'dotenv';
 
+import cookieParser from 'cookie-parser';
+
 import routes from './routes';
+import v1Routes from './routes/v1';
 import {
   errorMiddleware,
   notFoundMiddleware,
@@ -24,6 +27,7 @@ app.use(
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
 
 app.get('/', (_req: Request, res: Response) => {
   res.status(200).json({
@@ -32,6 +36,8 @@ app.get('/', (_req: Request, res: Response) => {
   });
 });
 
+app.use('/api/v1', v1Routes);
+app.use('/v1', v1Routes);
 app.use('/api', routes);
 
 app.use(notFoundMiddleware);

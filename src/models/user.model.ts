@@ -4,6 +4,7 @@ export interface IUser extends Document {
   email: string;
   password: string;
   employeeId: string;
+  employeeCode?: string;
   role: 'superadmin' | 'hr_manager' | 'accounts' | 'employee' | 'support' | 'user';
   isActive: boolean;
   lastLogin?: Date;
@@ -159,6 +160,9 @@ const userSchema = new Schema<IUser>(
       type: String,
       required: true,
       unique: true,
+    },
+    employeeCode: {
+      type: String,
     },
     role: {
       type: String,

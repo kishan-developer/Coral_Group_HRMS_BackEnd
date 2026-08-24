@@ -40,7 +40,6 @@ export class NotificationController {
         message: 'Notifications retrieved successfully',
       });
     } catch (error) {
-    return;
       next(error);
     }
   };
@@ -100,7 +99,6 @@ export class NotificationController {
         message: 'Notification retrieved successfully',
       });
     } catch (error) {
-    return;
       next(error);
     }
   };
@@ -125,7 +123,6 @@ export class NotificationController {
         message: 'Notification marked as read',
       });
     } catch (error) {
-    return;
       next(error);
     }
   };
@@ -147,7 +144,6 @@ export class NotificationController {
         message: 'All notifications marked as read',
       });
     } catch (error) {
-    return;
       next(error);
     }
   };
@@ -166,7 +162,6 @@ export class NotificationController {
         message: 'Notification deleted successfully',
       });
     } catch (error) {
-    return;
       next(error);
     }
   };

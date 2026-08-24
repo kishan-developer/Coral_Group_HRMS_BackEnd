@@ -64,7 +64,6 @@ export class PayrollController {
         message: 'Payroll data retrieved successfully',
       });
     } catch (error) {
-    return;
       next(error);
     }
   };
@@ -123,7 +122,6 @@ export class PayrollController {
         message: 'Payroll processed successfully',
       });
     } catch (error) {
-    return;
       next(error);
     }
   };
@@ -144,7 +142,6 @@ export class PayrollController {
         message: 'Payroll approved successfully',
       });
     } catch (error) {
-    return;
       next(error);
     }
   };
@@ -217,7 +214,6 @@ export class PayrollController {
         message: 'Payroll report retrieved successfully',
       });
     } catch (error) {
-    return;
       next(error);
     }
   };
@@ -248,7 +244,6 @@ export class PayrollController {
         message: 'Reimbursement payroll data retrieved successfully',
       });
     } catch (error) {
-    return;
       next(error);
     }
   };
@@ -346,7 +341,6 @@ export class PayrollController {
         message: 'Payslip generated successfully',
       });
     } catch (error) {
-    return;
       next(error);
     }
   };
@@ -416,7 +410,6 @@ export class PayrollController {
         message: 'Payroll data exported successfully',
       });
     } catch (error) {
-    return;
       next(error);
     }
   };

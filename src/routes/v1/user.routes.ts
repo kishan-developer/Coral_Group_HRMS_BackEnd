@@ -13,10 +13,10 @@ import {
   // getUserStats,
   updateProfile,
   bulkUploadUsers,
+  getHRDashboardOverview,
   upload,
   uploadDocument,
   deleteDocument,
-  getHRDashboardOverview,
 } from '../../controllers/user.controller';
 import { authMiddleware } from '../../middleware/auth.middleware';
 import { rbacMiddleware } from '../../middleware/rbac.middleware';
