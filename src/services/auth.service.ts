@@ -2,6 +2,10 @@ import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import { AppError } from '../middleware/error.middleware';
 import { User } from '../models/user.model';
+<<<<<<< HEAD
+=======
+import { Employee } from '../models/employee.model';
+>>>>>>> 2eb72eb (Initial commit)
 
 interface LoginCredentials {
   email: string;
@@ -9,12 +13,19 @@ interface LoginCredentials {
 }
 
 interface RegisterData {
+<<<<<<< HEAD
   firstName: string;
   lastName: string;
   email: string;
   phone: string;
   password: string;
   role?: 'superadmin' | 'hr_manager' | 'accounts' | 'employee' | 'support';
+=======
+  email: string;
+  password: string;
+  employeeId: string;
+  role: 'superadmin' | 'hr_manager' | 'accounts' | 'employee' | 'support';
+>>>>>>> 2eb72eb (Initial commit)
 }
 
 interface TokenPayload {
@@ -30,13 +41,21 @@ interface AuthTokens {
 
 export class AuthService {
   private generateAccessToken(payload: TokenPayload): string {
+<<<<<<< HEAD
     return jwt.sign(payload, process.env.JWT_SECRET || 'your-secret-key-change-this-in-production', {
+=======
+    return jwt.sign(payload, process.env.JWT_SECRET || 'secret', {
+>>>>>>> 2eb72eb (Initial commit)
       expiresIn: process.env.JWT_ACCESS_EXPIRY || '15m',
     } as jwt.SignOptions);
   }
 
   private generateRefreshToken(payload: TokenPayload): string {
+<<<<<<< HEAD
     return jwt.sign(payload, process.env.JWT_SECRET || 'your-secret-key-change-this-in-production', {
+=======
+    return jwt.sign(payload, process.env.JWT_SECRET || 'secret', {
+>>>>>>> 2eb72eb (Initial commit)
       expiresIn: process.env.JWT_REFRESH_EXPIRY || '7d',
     } as jwt.SignOptions);
   }
@@ -52,7 +71,11 @@ export class AuthService {
   async login(credentials: LoginCredentials): Promise<{ tokens: AuthTokens; user: any }> {
     const { email, password } = credentials;
 
+<<<<<<< HEAD
     const user = await User.findOne({ email });
+=======
+    const user = await User.findOne({ email }).populate('employeeId');
+>>>>>>> 2eb72eb (Initial commit)
 
     if (!user) {
       throw new AppError('Invalid credentials', 401, 'INVALID_CREDENTIALS');
@@ -82,6 +105,11 @@ export class AuthService {
     user.lastLogin = new Date();
     await user.save();
 
+<<<<<<< HEAD
+=======
+    const employee = await Employee.findById(user.employeeId);
+
+>>>>>>> 2eb72eb (Initial commit)
     return {
       tokens,
       user: {
@@ -89,14 +117,23 @@ export class AuthService {
         email: user.email,
         role: user.role,
         employeeId: user.employeeId?.toString() || '',
+<<<<<<< HEAD
         firstName: user.firstName || '',
         lastName: user.lastName || '',
+=======
+        firstName: employee?.firstName || '',
+        lastName: employee?.lastName || '',
+>>>>>>> 2eb72eb (Initial commit)
       },
     };
   }
 
   async register(data: RegisterData): Promise<{ user: any }> {
+<<<<<<< HEAD
     const { firstName, lastName, email, phone, password, role = 'employee' } = data;
+=======
+    const { email, password, employeeId, role } = data;
+>>>>>>> 2eb72eb (Initial commit)
 
     const existingUser = await User.findOne({ email });
 
@@ -104,6 +141,7 @@ export class AuthService {
       throw new AppError('Email already registered', 400, 'EMAIL_EXISTS');
     }
 
+<<<<<<< HEAD
     const passwordHash = await this.hashPassword(password);
 
     // Generate employee ID in CG-XXXX format
@@ -122,22 +160,50 @@ export class AuthService {
       isActive: true,
     });
 
+=======
+    const employee = await Employee.findById(employeeId);
+
+    if (!employee) {
+      throw new AppError('Employee not found', 404, 'EMPLOYEE_NOT_FOUND');
+    }
+
+    const passwordHash = await this.hashPassword(password);
+
+    const user = await User.create({
+      email,
+      password: passwordHash,
+      employeeId,
+      role,
+    });
+
+    const createdEmployee = await Employee.findById(user.employeeId);
+
+>>>>>>> 2eb72eb (Initial commit)
     return {
       user: {
         id: user._id.toString(),
         email: user.email,
         role: user.role,
         employeeId: user.employeeId?.toString() || '',
+<<<<<<< HEAD
         firstName: user.firstName || '',
         lastName: user.lastName || '',
         phone: user.phone || '',
+=======
+        firstName: createdEmployee?.firstName || '',
+        lastName: createdEmployee?.lastName || '',
+>>>>>>> 2eb72eb (Initial commit)
       },
     };
   }
 
   async refreshTokens(refreshToken: string): Promise<AuthTokens> {
     try {
+<<<<<<< HEAD
       const decoded = jwt.verify(refreshToken, process.env.JWT_SECRET || 'your-secret-key-change-this-in-production') as TokenPayload;
+=======
+      const decoded = jwt.verify(refreshToken, process.env.JWT_SECRET || 'secret') as TokenPayload;
+>>>>>>> 2eb72eb (Initial commit)
 
       const user = await User.findById(decoded.userId);
 

@@ -1,12 +1,18 @@
 import { Router } from 'express';
 import { PayrollController } from '../../controllers/payroll/payroll.controller';
 import { authMiddleware } from '../../middleware/auth.middleware';
+<<<<<<< HEAD
 import { param, query } from 'express-validator';
+=======
+>>>>>>> 2eb72eb (Initial commit)
 
 const router = Router();
 const payrollController = new PayrollController();
 
+<<<<<<< HEAD
 // Existing routes
+=======
+>>>>>>> 2eb72eb (Initial commit)
 router.get('/', authMiddleware, payrollController.getAllPayroll);
 router.post('/process', authMiddleware, payrollController.processPayroll);
 router.post('/approve', authMiddleware, payrollController.approvePayroll);
@@ -15,6 +21,7 @@ router.get('/reimbursement', authMiddleware, payrollController.getReimbursementP
 router.get('/payslip', authMiddleware, payrollController.generatePayslip);
 router.get('/export', authMiddleware, payrollController.exportPayrollData);
 
+<<<<<<< HEAD
 // New routes to match FrontEnd API
 router.get('/summary', authMiddleware, query('month').optional(), query('year').optional(), payrollController.getPayrollSummary);
 router.get('/employee/:employeeId', authMiddleware, param('employeeId').notEmpty(), query('month').optional(), query('year').optional(), payrollController.getPayrollByEmployee);
@@ -27,4 +34,6 @@ router.get('/adjustments', authMiddleware, query('month').optional(), query('yea
 router.post('/adjustments', authMiddleware, payrollController.createAdjustment);
 router.delete('/adjustments/:id', authMiddleware, param('id').notEmpty(), payrollController.deleteAdjustment);
 
+=======
+>>>>>>> 2eb72eb (Initial commit)
 export default router;

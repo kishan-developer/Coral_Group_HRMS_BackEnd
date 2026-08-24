@@ -4,7 +4,11 @@
     "module": "commonjs",
     "lib": ["ES2022"],
     "outDir": "./dist",
+<<<<<<< HEAD
     "rootDir": ".",
+=======
+    "rootDir": "./src",
+>>>>>>> 2eb72eb (Initial commit)
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
@@ -19,6 +23,7 @@
     "noUnusedParameters": true,
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
+<<<<<<< HEAD
     "baseUrl": ".",
     "paths": {
       "@config/*": ["src/config/*"],
@@ -32,5 +37,20 @@
     }
   },
   "include": ["src/**/*", "*.ts"],
+=======
+    "baseUrl": "./src",
+    "paths": {
+      "@config/*": ["config/*"],
+      "@controllers/*": ["controllers/*"],
+      "@models/*": ["models/*"],
+      "@routes/*": ["routes/*"],
+      "@services/*": ["services/*"],
+      "@middleware/*": ["middleware/*"],
+      "@validators/*": ["validators/*"],
+      "@utils/*": ["utils/*"]
+    }
+  },
+  "include": ["src/**/*"],
+>>>>>>> 2eb72eb (Initial commit)
   "exclude": ["node_modules", "dist", "tests"]
 }

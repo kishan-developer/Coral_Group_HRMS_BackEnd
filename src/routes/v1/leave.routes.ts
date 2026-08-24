@@ -1,13 +1,17 @@
 import { Router } from 'express';
 import { LeaveController } from '../../controllers/leave/leave.controller';
+<<<<<<< HEAD
 import { HolidayController } from '../../controllers/leave/holiday.controller';
 import { LeavePolicyController } from '../../controllers/leave/leave-policy.controller';
 import { LeaveTypeController } from '../../controllers/leave/leave-type.controller';
+=======
+>>>>>>> 2eb72eb (Initial commit)
 import { authMiddleware } from '../../middleware/auth.middleware';
 import { body, param } from 'express-validator';
 
 const router = Router();
 const leaveController = new LeaveController();
+<<<<<<< HEAD
 const holidayController = new HolidayController();
 const leavePolicyController = new LeavePolicyController();
 const leaveTypeController = new LeaveTypeController();
@@ -15,11 +19,18 @@ const leaveTypeController = new LeaveTypeController();
 const createLeaveValidation = [
   body('employeeId').isMongoId().withMessage('Valid employee ID is required'),
   body('leaveType').isIn(['Casual Leave', 'Paternity Leave']).withMessage('Invalid leave type'),
+=======
+
+const createLeaveValidation = [
+  body('employeeId').isMongoId().withMessage('Valid employee ID is required'),
+  body('leaveType').isIn(['Sick Leave', 'Casual Leave', 'Earned Leave', 'Maternity Leave', 'Paternity Leave', 'Unpaid Leave']).withMessage('Invalid leave type'),
+>>>>>>> 2eb72eb (Initial commit)
   body('fromDate').isISO8601().withMessage('Valid from date is required'),
   body('toDate').isISO8601().withMessage('Valid to date is required'),
   body('reason').notEmpty().withMessage('Reason is required'),
 ];
 
+<<<<<<< HEAD
 
 const updateLeaveValidation = [
   body('leaveType').optional().isIn(['Casual Leave', 'Paternity Leave']).withMessage('Invalid leave type'),
@@ -54,9 +65,23 @@ router.delete('/types/:id', authMiddleware, param('id').isMongoId(), leaveTypeCo
 
 // Parameterized routes go AFTER all static routes
 router.get('/:id', authMiddleware, param('id').isMongoId(), leaveController.getLeaveById);
+=======
+const updateLeaveValidation = [
+  body('leaveType').optional().isIn(['Sick Leave', 'Casual Leave', 'Earned Leave', 'Maternity Leave', 'Paternity Leave', 'Unpaid Leave']).withMessage('Invalid leave type'),
+];
+
+router.get('/', authMiddleware, leaveController.getAllLeaves);
+router.get('/:id', authMiddleware, param('id').isMongoId(), leaveController.getLeaveById);
+router.post('/', authMiddleware, createLeaveValidation, leaveController.createLeave);
+>>>>>>> 2eb72eb (Initial commit)
 router.put('/:id', authMiddleware, param('id').isMongoId(), updateLeaveValidation, leaveController.updateLeave);
 router.put('/:id/approve', authMiddleware, param('id').isMongoId(), leaveController.approveLeave);
 router.put('/:id/reject', authMiddleware, param('id').isMongoId(), leaveController.rejectLeave);
 router.post('/:id/cancel', authMiddleware, param('id').isMongoId(), leaveController.cancelLeave);
+<<<<<<< HEAD
+=======
+router.get('/balance/:employeeId', authMiddleware, param('employeeId').isMongoId(), leaveController.getLeaveBalance);
+router.get('/approvals', authMiddleware, leaveController.getLeaveApprovals);
+>>>>>>> 2eb72eb (Initial commit)
 
 export default router;

@@ -1,5 +1,9 @@
 import request from 'supertest';
+<<<<<<< HEAD
 import app from '../app';
+=======
+import app from './app';
+>>>>>>> 2eb72eb (Initial commit)
 
 describe('HRMS API Tests', () => {
   describe('Health Endpoint', () => {

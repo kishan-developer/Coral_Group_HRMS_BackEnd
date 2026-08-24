@@ -1,6 +1,10 @@
 import { Request, Response, NextFunction } from 'express';
 import { Reimbursement } from '../../models/reimbursement.model';
+<<<<<<< HEAD
 import { User } from '../../models/user.model';
+=======
+import { Employee } from '../../models/employee.model';
+>>>>>>> 2eb72eb (Initial commit)
 import { AppError } from '../../middleware/error.middleware';
 import { validationResult } from 'express-validator';
 
@@ -17,7 +21,11 @@ export class ReimbursementController {
       let query = Reimbursement.find(filter).populate('employeeId').sort({ submittedOn: -1 });
       
       if (departmentId && typeof departmentId === 'string') {
+<<<<<<< HEAD
         const employeeIds = await User.find({ departmentId, role: 'employee' }).distinct('_id');
+=======
+        const employeeIds = await Employee.find({ departmentId }).distinct('_id');
+>>>>>>> 2eb72eb (Initial commit)
         query = query.where('employeeId').in(employeeIds);
       }
 

@@ -52,4 +52,10 @@ const UserPermissionOverrideSchema = new Schema<IUserPermissionOverride>(
   }
 );
 
+<<<<<<< HEAD
+=======
+// Indexes
+UserPermissionOverrideSchema.index({ userId: 1 }, { unique: true });
+
+>>>>>>> 2eb72eb (Initial commit)
 export default mongoose.model<IUserPermissionOverride>('UserPermissionOverride', UserPermissionOverrideSchema);

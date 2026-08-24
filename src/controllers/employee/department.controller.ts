@@ -1,6 +1,10 @@
 import { Request, Response, NextFunction } from 'express';
 import { Department } from '../../models/department.model';
+<<<<<<< HEAD
 import { User } from '../../models/user.model';
+=======
+import { Employee } from '../../models/employee.model';
+>>>>>>> 2eb72eb (Initial commit)
 import { AppError } from '../../middleware/error.middleware';
 import { validationResult } from 'express-validator';
 
@@ -12,7 +16,11 @@ export class DepartmentController {
 
       const departmentsWithCount = await Promise.all(
         departments.map(async (dept: any) => {
+<<<<<<< HEAD
           const employeeCount = await User.countDocuments({ departmentId: dept._id, role: 'employee' });
+=======
+          const employeeCount = await Employee.countDocuments({ departmentId: dept._id });
+>>>>>>> 2eb72eb (Initial commit)
           const manager = dept.managerId as any;
           return {
             ...dept,
@@ -114,7 +122,11 @@ export class DepartmentController {
     try {
       const { id } = req.params;
       
+<<<<<<< HEAD
       const employeeCount = await User.countDocuments({ departmentId: id, role: 'employee' });
+=======
+      const employeeCount = await Employee.countDocuments({ departmentId: id });
+>>>>>>> 2eb72eb (Initial commit)
 
       if (employeeCount > 0) {
         throw new AppError('Cannot delete department with employees', 400, 'DEPARTMENT_HAS_EMPLOYEES');

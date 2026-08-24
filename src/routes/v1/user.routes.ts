@@ -6,6 +6,7 @@ import {
   createUser,
   updateUser,
   deleteUser,
+<<<<<<< HEAD
   // resetUserPassword,
   activateUser,
   deactivateUser,
@@ -16,6 +17,13 @@ import {
   upload,
   uploadDocument,
   deleteDocument,
+=======
+  activateUser,
+  deactivateUser,
+  updateProfile,
+  bulkUploadUsers,
+  upload,
+>>>>>>> 2eb72eb (Initial commit)
 } from '../../controllers/user.controller';
 import { authMiddleware } from '../../middleware/auth.middleware';
 import { rbacMiddleware } from '../../middleware/rbac.middleware';
@@ -122,16 +130,22 @@ router.put(
   authMiddleware,
   [
     param('id').isString().notEmpty(),
+<<<<<<< HEAD
     // Personal Information
     body('firstName').optional().isString(),
     body('lastName').optional().isString(),
     body('middleName').optional().isString(),
     body('displayName').optional().isString(),
     body('phone').optional().isString(),
+=======
+    body('firstName').optional().isString(),
+    body('lastName').optional().isString(),
+>>>>>>> 2eb72eb (Initial commit)
     body('dateOfBirth').optional().isString(),
     body('gender').optional().isIn(['male', 'female', 'other']),
     body('maritalStatus').optional().isIn(['single', 'married', 'divorced', 'widowed']),
     body('bloodGroup').optional().isString(),
+<<<<<<< HEAD
     body('nationality').optional().isString(),
     body('religion').optional().isString(),
     body('fatherName').optional().isString(),
@@ -144,10 +158,14 @@ router.put(
     body('aadharNumber').optional().isString(),
     body('passportNumber').optional().isString(),
     // Contact Information
+=======
+    body('email').optional().isEmail(),
+>>>>>>> 2eb72eb (Initial commit)
     body('mobile').optional().isString(),
     body('alternativeMobile').optional().isString(),
     body('currentAddress').optional().isString(),
     body('permanentAddress').optional().isString(),
+<<<<<<< HEAD
     body('city').optional().isString(),
     body('state').optional().isString(),
     body('country').optional().isString(),
@@ -157,10 +175,13 @@ router.put(
     body('permanentCountry').optional().isString(),
     body('permanentZipCode').optional().isString(),
     // Work Information
+=======
+>>>>>>> 2eb72eb (Initial commit)
     body('designation').optional().isString(),
     body('department').optional().isString(),
     body('branch').optional().isString(),
     body('employmentType').optional().isIn(['full-time', 'part-time', 'contract', 'intern']),
+<<<<<<< HEAD
     body('workType').optional().isIn(['Office', 'Remote', 'On Field']),
     body('employeeStatus').optional().isIn(['Active', 'Inactive', 'On Leave', 'Probation']),
     body('company').optional().isString(),
@@ -186,11 +207,17 @@ router.put(
     body('skills').optional().isArray(),
     body('languages').optional().isArray(),
     body('experience').optional().isArray(),
+=======
+    body('highestQualification').optional().isString(),
+    body('collegeName').optional().isString(),
+    body('passingYear').optional().isString(),
+>>>>>>> 2eb72eb (Initial commit)
   ],
   validate,
   updateProfile
 );
 
+<<<<<<< HEAD
 // POST /api/users/:id/documents - Upload document for user profile (requires auth)
 router.post(
   '/:id/documents',
@@ -206,6 +233,8 @@ router.delete(
   deleteDocument
 );
 
+=======
+>>>>>>> 2eb72eb (Initial commit)
 // 
 // DELETE /api/users/:id - Delete user (no auth for testing)
 router.delete(

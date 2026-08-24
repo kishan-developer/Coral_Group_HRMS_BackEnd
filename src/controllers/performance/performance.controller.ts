@@ -1,6 +1,10 @@
 import { Request, Response, NextFunction } from 'express';
 import { Performance } from '../../models/performance.model';
+<<<<<<< HEAD
 import { User } from '../../models/user.model';
+=======
+import { Employee } from '../../models/employee.model';
+>>>>>>> 2eb72eb (Initial commit)
 import { AppError } from '../../middleware/error.middleware';
 import { validationResult } from 'express-validator';
 
@@ -18,7 +22,11 @@ export class PerformanceController {
       let query = Performance.find(filter).populate('employeeId').sort({ year: -1, createdAt: -1 });
       
       if (departmentId && typeof departmentId === 'string') {
+<<<<<<< HEAD
         const employeeIds = await User.find({ departmentId, role: 'employee' }).distinct('_id');
+=======
+        const employeeIds = await Employee.find({ departmentId }).distinct('_id');
+>>>>>>> 2eb72eb (Initial commit)
         query = query.where('employeeId').in(employeeIds);
       }
 
@@ -167,7 +175,11 @@ export class PerformanceController {
       ];
 
       if (departmentId && typeof departmentId === 'string') {
+<<<<<<< HEAD
         const employeeIds = await User.find({ departmentId, role: 'employee' }).distinct('_id');
+=======
+        const employeeIds = await Employee.find({ departmentId }).distinct('_id');
+>>>>>>> 2eb72eb (Initial commit)
         pipeline.push({ $match: { employeeId: { $in: employeeIds.map(id => id.toString()) } } });
       }
 
@@ -212,7 +224,11 @@ export class PerformanceController {
       ];
 
       if (departmentId && typeof departmentId === 'string') {
+<<<<<<< HEAD
         const employeeIds = await User.find({ departmentId, role: 'employee' }).distinct('_id');
+=======
+        const employeeIds = await Employee.find({ departmentId }).distinct('_id');
+>>>>>>> 2eb72eb (Initial commit)
         pipeline.push({ $match: { employeeId: { $in: employeeIds.map(id => id.toString()) } } });
       }
 
@@ -241,6 +257,7 @@ export class PerformanceController {
       next(error);
     }
   };
+<<<<<<< HEAD
 
   // Feedback endpoints to match FrontEnd API
   getFeedback = async (_req: Request, res: Response, next: NextFunction): Promise<void> => {
@@ -296,4 +313,6 @@ export class PerformanceController {
       next(error);
     }
   };
+=======
+>>>>>>> 2eb72eb (Initial commit)
 }

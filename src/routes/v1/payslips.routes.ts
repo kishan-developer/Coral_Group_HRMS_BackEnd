@@ -13,8 +13,11 @@ const generatePayslipValidation = [
 ];
 
 router.get('/', authMiddleware, payslipsController.getAllPayslips);
+<<<<<<< HEAD
 router.get('/my-payslips', authMiddleware, payslipsController.getMyPayslips);
 router.get('/:id', authMiddleware, payslipsController.getPayslipById);
+=======
+>>>>>>> 2eb72eb (Initial commit)
 router.post('/generate', authMiddleware, generatePayslipValidation, payslipsController.generatePayslip);
 
 export default router;

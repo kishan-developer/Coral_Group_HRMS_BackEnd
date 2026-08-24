@@ -7,6 +7,10 @@ const router = Router();
 const employeeController = new EmployeeController();
 
 const createEmployeeValidation = [
+<<<<<<< HEAD
+=======
+  body('employeeId').notEmpty().withMessage('Employee ID is required'),
+>>>>>>> 2eb72eb (Initial commit)
   body('firstName').notEmpty().withMessage('First name is required'),
   body('lastName').notEmpty().withMessage('Last name is required'),
   body('email').isEmail().withMessage('Valid email is required'),

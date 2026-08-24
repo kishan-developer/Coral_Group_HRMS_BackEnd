@@ -1,6 +1,10 @@
 import { Request, Response, NextFunction } from 'express';
 import mongoose from 'mongoose';
 import { User } from '../../models/user.model';
+<<<<<<< HEAD
+=======
+import { Employee } from '../../models/employee.model';
+>>>>>>> 2eb72eb (Initial commit)
 import { Session } from '../../models/session.model';
 import { Device } from '../../models/device.model';
 import { OTP } from '../../models/otp.model';
@@ -15,17 +19,67 @@ import {
 import { hashPassword, comparePassword, validatePasswordStrength } from '../../utils/password.util';
 import { parseDeviceInfo, getDeviceName } from '../../utils/device.util';
 import { sendVerificationOTPEmail, sendPasswordResetOTPEmail } from '../../utils/email.utils';
+<<<<<<< HEAD
+=======
+import { v4 as uuidv4 } from 'uuid';
+
+// Helper function to generate the next employee code
+const generateEmployeeCode = async (): Promise<string> => {
+  const prefix = 'CG';
+  
+  // Find the highest numeric suffix from existing employee codes
+  const lastUser = await User.findOne({ employeeCode: { $regex: `^${prefix}-` } })
+    .sort({ employeeCode: -1 })
+    .select('employeeCode')
+    .exec();
+  
+  let nextNumber = 101; // Start from CG-101
+  if (lastUser && lastUser.employeeCode) {
+    const lastNumber = parseInt(lastUser.employeeCode.split('-')[1]);
+    if (!isNaN(lastNumber)) {
+      nextNumber = lastNumber + 1;
+    }
+  }
+  
+  return `${prefix}-${nextNumber}`;
+};
+
+// Helper function to generate the next employee ID
+const generateEmployeeId = async (): Promise<string> => {
+  const prefix = 'EMP';
+  
+  // Find the highest numeric suffix from existing employee IDs
+  const lastEmployee = await Employee.findOne({ employeeId: { $regex: `^${prefix}` } })
+    .sort({ employeeId: -1 })
+    .select('employeeId')
+    .exec();
+  
+  let nextNumber = 1; // Start from EMP1
+  if (lastEmployee && lastEmployee.employeeId) {
+    const lastNumber = parseInt(lastEmployee.employeeId.replace('EMP', ''));
+    if (!isNaN(lastNumber)) {
+      nextNumber = lastNumber + 1;
+    }
+  }
+  
+  return `${prefix}${nextNumber}`;
+};
+>>>>>>> 2eb72eb (Initial commit)
 
 // Register - Step 1: Send OTP to email without creating user
 export const register = async (req: Request, res: Response, next: NextFunction) => {
   try {
     console.log('Register request body:', req.body);
+<<<<<<< HEAD
     const { firstName, lastName, email, phone, password, confirmPassword, role } = req.body;
 
     // Validate required fields
     if (!firstName || !lastName || !email || !phone || !password) {
       throw new AppError('All fields are required', 400, 'MISSING_FIELDS');
     }
+=======
+    const { email, password, confirmPassword, role } = req.body;
+>>>>>>> 2eb72eb (Initial commit)
 
     // Validate passwords match
     if (password !== confirmPassword) {
@@ -53,12 +107,18 @@ export const register = async (req: Request, res: Response, next: NextFunction) 
       otp,
       expiresAt: new Date(Date.now() + 5 * 60 * 1000), // 5 minutes
       metadata: {
+<<<<<<< HEAD
         firstName,
         lastName,
         email,
         phone,
         password, // Will be hashed after verification
         role: role || 'employee',
+=======
+        email,
+        password, // Will be hashed after verification
+        role: role || 'support',
+>>>>>>> 2eb72eb (Initial commit)
       },
       ipAddress: req.ip,
     });
@@ -106,6 +166,7 @@ export const completeRegistration = async (req: Request, res: Response, next: Ne
       throw new AppError('User with this email already exists', 400, 'USER_EXISTS');
     }
 
+<<<<<<< HEAD
     // Hash password
     const hashedPassword = await hashPassword(otpRecord.metadata.password);
 
@@ -181,6 +242,79 @@ export const completeRegistration = async (req: Request, res: Response, next: Ne
     }
 
     throw new AppError('Unable to generate unique employee ID. Please contact support.', 500, 'ID_GENERATION_FAILED');
+=======
+    // Generate employee ID
+    const employeeId = await generateEmployeeId();
+
+    // Generate employee code
+    const employeeCode = await generateEmployeeCode();
+
+    // Hash password
+    const hashedPassword = await hashPassword(otpRecord.metadata.password);
+
+    // Create user
+    const user = await User.create({
+      id: uuidv4(),
+      email: otpRecord.metadata.email,
+      password: hashedPassword,
+      role: otpRecord.metadata.role || 'employee',
+      isActive: true,
+      employeeId,
+      employeeCode,
+    });
+
+    // Create employee record
+    const employee = await Employee.create({
+      employeeId,
+      firstName: email.split('@')[0],
+      lastName: '',
+      email,
+      phone: '',
+      joiningDate: new Date(),
+      status: 'Active',
+      workType: 'Office',
+      userId: user.id,
+    });
+
+    // Mark OTP as verified
+    otpRecord.isVerified = true;
+    otpRecord.userId = user._id;
+    await otpRecord.save();
+
+    // Generate tokens
+    const payload = {
+      userId: user._id.toString(),
+      email: user.email,
+      role: user.role,
+    };
+    const accessToken = generateAccessToken(payload);
+    const refreshToken = generateRefreshToken(payload);
+
+    // Create session
+    const session = await Session.create({
+      userId: user._id,
+      token: accessToken,
+      refreshToken,
+      deviceInfo: parseDeviceInfo(req.get('user-agent') || ''),
+      ipAddress: req.ip,
+      isActive: true,
+      expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours
+    });
+
+    res.status(201).json({
+      success: true,
+      message: 'Registration completed successfully',
+      data: {
+        user: {
+          id: user._id,
+          email: user.email,
+          role: user.role,
+        },
+        accessToken,
+        refreshToken,
+      },
+    });
+>>>>>>> 2eb72eb (Initial commit)
   } catch (error) {
     next(error);
   }
@@ -310,12 +444,18 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
       message: 'Login successful',
       data: {
         accessToken,
+<<<<<<< HEAD
         refreshToken, // Included for mobile clients (web uses the HTTP-only cookie above)
+=======
+>>>>>>> 2eb72eb (Initial commit)
         user: {
           id: user._id,
           email: user.email,
           role: user.role,
+<<<<<<< HEAD
           employeeId: user.employeeId,
+=======
+>>>>>>> 2eb72eb (Initial commit)
         },
       },
     });
@@ -350,8 +490,12 @@ export const logout = async (req: Request, res: Response, next: NextFunction) =>
 // Refresh Token
 export const refreshToken = async (req: Request, res: Response, next: NextFunction) => {
   try {
+<<<<<<< HEAD
     // Accept from cookie (web) or request body (mobile)
     const refreshToken = req.cookies?.refreshToken || req.body?.refreshToken;
+=======
+    const { refreshToken } = req.cookies;
+>>>>>>> 2eb72eb (Initial commit)
 
     if (!refreshToken) {
       throw new AppError('Refresh token not found', 401, 'NO_REFRESH_TOKEN');

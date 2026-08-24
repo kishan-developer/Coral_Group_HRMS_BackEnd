@@ -120,7 +120,11 @@ export const submitNewJoining = async (req: Request, res: Response, next: NextFu
   }
 };
 
+<<<<<<< HEAD
 export const getNewJoiningSubmissions = async (_req: Request, res: Response, next: NextFunction) => {
+=======
+export const getNewJoiningSubmissions = async (req: Request, res: Response, next: NextFunction) => {
+>>>>>>> 2eb72eb (Initial commit)
   try {
     const submissions = await NewJoining.find().sort({ submittedAt: -1 });
 

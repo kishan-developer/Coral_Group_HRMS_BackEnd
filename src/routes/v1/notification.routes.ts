@@ -7,10 +7,15 @@ const router = Router();
 const notificationController = new NotificationController();
 
 router.get('/', authMiddleware, notificationController.getAllNotifications);
+<<<<<<< HEAD
 router.get('/my-notifications', authMiddleware, notificationController.getMyNotifications);
 router.get('/:id', authMiddleware, param('id').isMongoId(), notificationController.getNotificationById);
 router.put('/:id/mark-read', authMiddleware, param('id').isMongoId(), notificationController.markAsRead);
 router.put('/:id/read', authMiddleware, param('id').isMongoId(), notificationController.markAsRead);
+=======
+router.get('/:id', authMiddleware, param('id').isMongoId(), notificationController.getNotificationById);
+router.put('/:id/mark-read', authMiddleware, param('id').isMongoId(), notificationController.markAsRead);
+>>>>>>> 2eb72eb (Initial commit)
 router.put('/mark-all-read', authMiddleware, notificationController.markAllAsRead);
 router.delete('/:id', authMiddleware, param('id').isMongoId(), notificationController.deleteNotification);
 

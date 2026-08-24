@@ -1,8 +1,11 @@
 import jwt, { SignOptions } from 'jsonwebtoken';
+<<<<<<< HEAD
 import dotenv from 'dotenv';
 
 // Load environment variables
 dotenv.config();
+=======
+>>>>>>> 2eb72eb (Initial commit)
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-this-in-production';
 const JWT_ACCESS_EXPIRY_SECONDS = 15 * 60; // 15 minutes
@@ -19,7 +22,10 @@ export const generateAccessToken = (payload: JWTPayload): string => {
   const options: SignOptions = {
     expiresIn: JWT_ACCESS_EXPIRY_SECONDS,
   };
+<<<<<<< HEAD
   console.log('JWT Util - Generating access token with secret:', JWT_SECRET.substring(0, 10) + '...');
+=======
+>>>>>>> 2eb72eb (Initial commit)
   return jwt.sign(payload, JWT_SECRET, options);
 };
 

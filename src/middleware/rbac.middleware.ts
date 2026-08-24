@@ -28,6 +28,11 @@ export const rbacMiddleware = (requiredPermissions: string[]) => {
   };
 };
 
+<<<<<<< HEAD
+=======
+
+
+>>>>>>> 2eb72eb (Initial commit)
 const getPermissionsForRole = (role: string): string[] => {
   const permissions: Record<string, string[]> = {
     superadmin: [

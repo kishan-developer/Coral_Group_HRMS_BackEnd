@@ -75,6 +75,7 @@ export const sendLeaveApprovalEmail = async (
   status: 'Approved' | 'Rejected',
   reason?: string
 ): Promise<void> => {
+<<<<<<< HEAD
   const subject = `Leave Request ${status} - Coral Group HRMS`;
   const statusColor = status === 'Approved' ? '#4CAF50' : '#F44336';
   const statusBg = status === 'Approved' ? 'rgba(76, 175, 80, 0.1)' : 'rgba(244, 67, 54, 0.1)';
@@ -221,6 +222,15 @@ export const sendLeaveApprovalEmail = async (
       </div>
     </body>
     </html>
+=======
+  const subject = `Leave Request ${status}`;
+  const html = `
+    <h2>Leave Request ${status}</h2>
+    <p>Dear ${employeeName},</p>
+    <p>Your ${leaveType} leave request has been ${status.toLowerCase()}.</p>
+    ${reason ? `<p>Reason: ${reason}</p>` : ''}
+    <p>Best regards,<br>HR Team</p>
+>>>>>>> 2eb72eb (Initial commit)
   `;
   await sendEmail(email, subject, html);
 };
@@ -232,6 +242,7 @@ export const sendLeaveRequestEmail = async (
   fromDate: string,
   toDate: string
 ): Promise<void> => {
+<<<<<<< HEAD
   const subject = `New Leave Request - ${employeeName} - Coral Group HRMS`;
   const html = `
     <!DOCTYPE html>
@@ -362,6 +373,15 @@ export const sendLeaveRequestEmail = async (
       </div>
     </body>
     </html>
+=======
+  const subject = `New Leave Request - ${employeeName}`;
+  const html = `
+    <h2>New Leave Request</h2>
+    <p>Dear Manager,</p>
+    <p>${employeeName} has requested ${leaveType} leave from ${fromDate} to ${toDate}.</p>
+    <p>Please review and approve/reject the request in the HRMS portal.</p>
+    <p>Best regards,<br>HR System</p>
+>>>>>>> 2eb72eb (Initial commit)
   `;
   await sendEmail(managerEmail, subject, html);
 };
@@ -372,6 +392,7 @@ export const sendVerificationOTPEmail = async (
 ): Promise<void> => {
   const subject = 'Verify Your Email - Coral Group HRMS';
   const html = `
+<<<<<<< HEAD
     <!DOCTYPE html>
     <html>
     <head>
@@ -514,6 +535,19 @@ export const sendVerificationOTPEmail = async (
       </div>
     </body>
     </html>
+=======
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+      <h2 style="color: #94cb3d;">Verify Your Email</h2>
+      <p>Dear User,</p>
+      <p>Thank you for registering with Coral Group HRMS. Please use the following OTP to verify your email address:</p>
+      <div style="background-color: #f5f5f5; padding: 20px; text-align: center; margin: 20px 0;">
+        <span style="font-size: 32px; font-weight: bold; letter-spacing: 5px; color: #94cb3d;">${otp}</span>
+      </div>
+      <p>This OTP will expire in 5 minutes.</p>
+      <p>If you did not request this verification, please ignore this email.</p>
+      <p>Best regards,<br>Coral Group HRMS Team</p>
+    </div>
+>>>>>>> 2eb72eb (Initial commit)
   `;
   await sendEmail(email, subject, html);
 };
@@ -524,6 +558,7 @@ export const sendPasswordResetOTPEmail = async (
 ): Promise<void> => {
   const subject = 'Password Reset OTP - Coral Group HRMS';
   const html = `
+<<<<<<< HEAD
     <!DOCTYPE html>
     <html>
     <head>
@@ -667,6 +702,19 @@ export const sendPasswordResetOTPEmail = async (
       </div>
     </body>
     </html>
+=======
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+      <h2 style="color: #94cb3d;">Password Reset Request</h2>
+      <p>Dear User,</p>
+      <p>We received a request to reset your password. Please use the following OTP to reset your password:</p>
+      <div style="background-color: #f5f5f5; padding: 20px; text-align: center; margin: 20px 0;">
+        <span style="font-size: 32px; font-weight: bold; letter-spacing: 5px; color: #94cb3d;">${otp}</span>
+      </div>
+      <p>This OTP will expire in 5 minutes.</p>
+      <p>If you did not request this password reset, please ignore this email and your password will remain unchanged.</p>
+      <p>Best regards,<br>Coral Group HRMS Team</p>
+    </div>
+>>>>>>> 2eb72eb (Initial commit)
   `;
   await sendEmail(email, subject, html);
 };
