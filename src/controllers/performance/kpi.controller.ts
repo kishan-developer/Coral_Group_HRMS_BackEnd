@@ -1,10 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { KPI } from '../../models/kpi.model';
-<<<<<<< HEAD
 import { User } from '../../models/user.model';
-=======
-import { Employee } from '../../models/employee.model';
->>>>>>> 2eb72eb (Initial commit)
 import { AppError } from '../../middleware/error.middleware';
 import { validationResult } from 'express-validator';
 
@@ -23,11 +19,7 @@ export class KPIController {
       let query = KPI.find(filter).populate('employeeId').sort({ dueDate: 1 });
       
       if (departmentId && typeof departmentId === 'string') {
-<<<<<<< HEAD
         const employeeIds = await User.find({ departmentId, role: 'employee' }).distinct('_id');
-=======
-        const employeeIds = await Employee.find({ departmentId }).distinct('_id');
->>>>>>> 2eb72eb (Initial commit)
         query = query.where('employeeId').in(employeeIds);
       }
 
@@ -257,11 +249,7 @@ export class KPIController {
       ];
 
       if (departmentId && typeof departmentId === 'string') {
-<<<<<<< HEAD
         const employeeIds = await User.find({ departmentId, role: 'employee' }).distinct('_id');
-=======
-        const employeeIds = await Employee.find({ departmentId }).distinct('_id');
->>>>>>> 2eb72eb (Initial commit)
         pipeline.push({ $match: { employeeId: { $in: employeeIds.map(id => id.toString()) } } });
       }
 

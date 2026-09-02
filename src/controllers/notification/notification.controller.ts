@@ -45,7 +45,6 @@ export class NotificationController {
     }
   };
 
-<<<<<<< HEAD
   getMyNotifications = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
     try {
       const userId = req.userId;
@@ -86,8 +85,6 @@ export class NotificationController {
     }
   };
 
-=======
->>>>>>> 2eb72eb (Initial commit)
   getNotificationById = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const { id } = req.params;
@@ -176,7 +173,6 @@ export class NotificationController {
 
   createNotification = async (userId: string, type: string, title: string, message: string): Promise<void> => {
     await Notification.create({
-<<<<<<< HEAD
       audience: {
         audienceType: 'Specific Employees' as any,
         employeeIds: [userId],
@@ -184,13 +180,6 @@ export class NotificationController {
       type: type as any,
       title,
       message,
-=======
-      userId,
-      type,
-      title,
-      message,
-      isRead: false,
->>>>>>> 2eb72eb (Initial commit)
     });
   };
 

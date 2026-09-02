@@ -17,6 +17,10 @@ export class LeavePolicyController {
           maternityLeaveDays: 180,
           paternityLeaveDays: 15,
           unpaidLeaveDays: 0,
+          monthlyCLAccrual: 1.0,
+          monthlyPLAccrual: 1.25,
+          probationMonthsForPL: 6,
+          autoConsumptionOrder: ['CL', 'PL', 'LWP'],
           carryForwardEnabled: true,
           leaveEncashmentEnabled: true,
           sandwichLeaveRule: false,
@@ -32,7 +36,7 @@ export class LeavePolicyController {
         message: 'Leave policies retrieved successfully',
       });
     } catch (error) {
-    return;
+      return;
       next(error);
     }
   };
@@ -51,6 +55,10 @@ export class LeavePolicyController {
         maternityLeaveDays,
         paternityLeaveDays,
         unpaidLeaveDays,
+        monthlyCLAccrual,
+        monthlyPLAccrual,
+        probationMonthsForPL,
+        autoConsumptionOrder,
         carryForwardEnabled,
         leaveEncashmentEnabled,
         sandwichLeaveRule,
@@ -65,6 +73,10 @@ export class LeavePolicyController {
       if (maternityLeaveDays !== undefined) updateData.maternityLeaveDays = maternityLeaveDays;
       if (paternityLeaveDays !== undefined) updateData.paternityLeaveDays = paternityLeaveDays;
       if (unpaidLeaveDays !== undefined) updateData.unpaidLeaveDays = unpaidLeaveDays;
+      if (monthlyCLAccrual !== undefined) updateData.monthlyCLAccrual = monthlyCLAccrual;
+      if (monthlyPLAccrual !== undefined) updateData.monthlyPLAccrual = monthlyPLAccrual;
+      if (probationMonthsForPL !== undefined) updateData.probationMonthsForPL = probationMonthsForPL;
+      if (autoConsumptionOrder !== undefined) updateData.autoConsumptionOrder = autoConsumptionOrder;
       if (carryForwardEnabled !== undefined) updateData.carryForwardEnabled = carryForwardEnabled;
       if (leaveEncashmentEnabled !== undefined) updateData.leaveEncashmentEnabled = leaveEncashmentEnabled;
       if (sandwichLeaveRule !== undefined) updateData.sandwichLeaveRule = sandwichLeaveRule;

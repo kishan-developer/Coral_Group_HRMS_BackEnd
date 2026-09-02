@@ -1,10 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import Company from '../models/company.model';
-<<<<<<< HEAD
 import { User } from '../models/user.model';
-=======
-import { Employee } from '../models/employee.model';
->>>>>>> 2eb72eb (Initial commit)
 import AuditLog from '../models/audit-log.model';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -125,11 +121,7 @@ export const getCompanyById = async (req: Request, res: Response, next: NextFunc
     }
 
     // Get employee count for this company
-<<<<<<< HEAD
     const employeeCount = await User.countDocuments({ companyId: id, role: 'employee' });
-=======
-    const employeeCount = await Employee.countDocuments({ companyId: id });
->>>>>>> 2eb72eb (Initial commit)
 
     return res.json({
       success: true,
@@ -328,11 +320,7 @@ export const assignCompanyAdmin = async (req: Request, res: Response, next: Next
     }
 
     // Verify admin user exists
-<<<<<<< HEAD
     const adminUser = await User.findOne({ employeeId: adminId });
-=======
-    const adminUser = await Employee.findOne({ employeeId: adminId });
->>>>>>> 2eb72eb (Initial commit)
     if (!adminUser) {
       return res.status(404).json({
         success: false,
@@ -388,11 +376,7 @@ export const deleteCompany = async (req: Request, res: Response, next: NextFunct
     }
 
     // Check if company has employees
-<<<<<<< HEAD
     const employeeCount = await User.countDocuments({ companyId: id, role: 'employee' });
-=======
-    const employeeCount = await Employee.countDocuments({ companyId: id });
->>>>>>> 2eb72eb (Initial commit)
     if (employeeCount > 0) {
       return res.status(400).json({
         success: false,
@@ -426,7 +410,6 @@ export const deleteCompany = async (req: Request, res: Response, next: NextFunct
     next(error);
   }
 };
-<<<<<<< HEAD
 
 // Get company settings
 export const getCompanySettings = async (req: Request, res: Response, next: NextFunction) => {
@@ -499,5 +482,3 @@ export const updateCompanySettings = async (req: Request, res: Response, next: N
     return next(error);
   }
 };
-=======
->>>>>>> 2eb72eb (Initial commit)

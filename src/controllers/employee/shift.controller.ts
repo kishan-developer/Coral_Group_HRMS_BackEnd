@@ -1,10 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { Shift } from '../../models/shift.model';
-<<<<<<< HEAD
 import { User } from '../../models/user.model';
-=======
-import { Employee } from '../../models/employee.model';
->>>>>>> 2eb72eb (Initial commit)
 import { AppError } from '../../middleware/error.middleware';
 import { validationResult } from 'express-validator';
 
@@ -15,11 +11,7 @@ export class ShiftController {
       
       const shiftsCount = await Promise.all(
         shifts.map(async (shift: any) => {
-<<<<<<< HEAD
           const employeeCount = await User.countDocuments({ shiftId: shift._id, role: 'employee' });
-=======
-          const employeeCount = await Employee.countDocuments({ shiftId: shift._id });
->>>>>>> 2eb72eb (Initial commit)
           return {
             ...shift,
             employeeCount,
@@ -114,11 +106,7 @@ export class ShiftController {
     try {
       const { id } = req.params;
       
-<<<<<<< HEAD
       const employeeCount = await User.countDocuments({ shiftId: id, role: 'employee' });
-=======
-      const employeeCount = await Employee.countDocuments({ shiftId: id });
->>>>>>> 2eb72eb (Initial commit)
 
       if (employeeCount > 0) {
         throw new AppError('Cannot delete shift with assigned employees', 400, 'SHIFT_HAS_EMPLOYEES');

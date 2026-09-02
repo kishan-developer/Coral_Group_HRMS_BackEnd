@@ -1,9 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-<<<<<<< HEAD
 import { User } from '../../models/user.model';
-=======
-import { Employee } from '../../models/employee.model';
->>>>>>> 2eb72eb (Initial commit)
 import { Attendance } from '../../models/attendance.model';
 import { Reimbursement } from '../../models/reimbursement.model';
 import { AppError } from '../../middleware/error.middleware';
@@ -26,11 +22,7 @@ export class PayrollController {
       const pipeline: any[] = [
         {
           $lookup: {
-<<<<<<< HEAD
             from: 'users',
-=======
-            from: 'employees',
->>>>>>> 2eb72eb (Initial commit)
             localField: 'employeeId',
             foreignField: '_id',
             as: 'employee',
@@ -96,11 +88,7 @@ export class PayrollController {
         { $match: matchStage },
         {
           $lookup: {
-<<<<<<< HEAD
             from: 'users',
-=======
-            from: 'employees',
->>>>>>> 2eb72eb (Initial commit)
             localField: 'employeeId',
             foreignField: '_id',
             as: 'employee',
@@ -174,11 +162,7 @@ export class PayrollController {
       const pipeline: any[] = [
         {
           $lookup: {
-<<<<<<< HEAD
             from: 'users',
-=======
-            from: 'employees',
->>>>>>> 2eb72eb (Initial commit)
             localField: 'employeeId',
             foreignField: '_id',
             as: 'employee',
@@ -201,11 +185,7 @@ export class PayrollController {
       }
 
       if (departmentId && typeof departmentId === 'string') {
-<<<<<<< HEAD
         const employeeIds = await User.find({ departmentId, role: 'employee' }).distinct('_id');
-=======
-        const employeeIds = await Employee.find({ departmentId }).distinct('_id');
->>>>>>> 2eb72eb (Initial commit)
         pipeline.push({ $match: { employeeId: { $in: employeeIds.map(id => id.toString()) } } });
       }
 
@@ -277,11 +257,7 @@ export class PayrollController {
     try {
       const { employeeId, month, year } = req.query;
 
-<<<<<<< HEAD
       const employee = await User.findOne({ employeeId: String(employeeId) }).populate('departmentId');
-=======
-      const employee = await Employee.findById(employeeId).populate('departmentId');
->>>>>>> 2eb72eb (Initial commit)
 
       if (!employee) {
         throw new AppError('Employee not found', 404, 'EMPLOYEE_NOT_FOUND');
@@ -389,11 +365,7 @@ export class PayrollController {
       const pipeline: any[] = [
         {
           $lookup: {
-<<<<<<< HEAD
             from: 'users',
-=======
-            from: 'employees',
->>>>>>> 2eb72eb (Initial commit)
             localField: 'employeeId',
             foreignField: '_id',
             as: 'employee',
@@ -416,11 +388,7 @@ export class PayrollController {
       }
 
       if (departmentId && typeof departmentId === 'string') {
-<<<<<<< HEAD
         const employeeIds = await User.find({ departmentId, role: 'employee' }).distinct('_id');
-=======
-        const employeeIds = await Employee.find({ departmentId }).distinct('_id');
->>>>>>> 2eb72eb (Initial commit)
         pipeline.push({ $match: { employeeId: { $in: employeeIds.map(id => id.toString()) } } });
       }
 
@@ -452,7 +420,6 @@ export class PayrollController {
       next(error);
     }
   };
-<<<<<<< HEAD
 
   // New methods to match FrontEnd API
   getPayrollSummary = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
@@ -606,6 +573,4 @@ export class PayrollController {
       next(error);
     }
   };
-=======
->>>>>>> 2eb72eb (Initial commit)
 }

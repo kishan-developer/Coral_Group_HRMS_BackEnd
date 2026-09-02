@@ -1,10 +1,7 @@
 import mongoose, { Document, Schema } from 'mongoose';
 
 export interface ILeaveBalance extends Document {
-<<<<<<< HEAD
   userId: string;
-=======
->>>>>>> 2eb72eb (Initial commit)
   employeeId: string;
   year: number;
   casualLeave: number;
@@ -19,14 +16,11 @@ export interface ILeaveBalance extends Document {
 
 const leaveBalanceSchema = new Schema<ILeaveBalance>(
   {
-<<<<<<< HEAD
     userId: {
       type: String,
       required: true,
       ref: 'User',
     },
-=======
->>>>>>> 2eb72eb (Initial commit)
     employeeId: {
       type: String,
       required: true,

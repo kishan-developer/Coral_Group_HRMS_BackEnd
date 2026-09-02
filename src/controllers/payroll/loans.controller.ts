@@ -1,10 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { Loan } from '../../models/loan.model';
-<<<<<<< HEAD
 import { User } from '../../models/user.model';
-=======
-import { Employee } from '../../models/employee.model';
->>>>>>> 2eb72eb (Initial commit)
 import { AppError } from '../../middleware/error.middleware';
 import { validationResult } from 'express-validator';
 
@@ -59,11 +55,7 @@ export class LoansController {
         purpose 
       } = req.body;
 
-<<<<<<< HEAD
       const employee = await User.findById(employeeId);
-=======
-      const employee = await Employee.findById(employeeId);
->>>>>>> 2eb72eb (Initial commit)
       if (!employee) {
         throw new AppError('Employee not found', 404, 'EMPLOYEE_NOT_FOUND');
       }

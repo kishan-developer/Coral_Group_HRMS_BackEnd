@@ -1,15 +1,11 @@
 import mongoose, { Document, Schema } from 'mongoose';
 
 export interface IAttendance extends Document {
-<<<<<<< HEAD
   userId: string;
-=======
->>>>>>> 2eb72eb (Initial commit)
   employeeId: string;
   date: Date;
   punchInTime?: string;
   punchOutTime?: string;
-<<<<<<< HEAD
   punchInLocation?: {
     latitude: number;
     longitude: number;
@@ -49,27 +45,17 @@ export interface IAttendance extends Document {
   shiftStartTime?: string;
   shiftEndTime?: string;
   notes?: string;
-=======
-  punchInLocation?: string;
-  punchOutLocation?: string;
-  totalHours?: number;
-  overtimeHours?: number;
-  status: 'Present' | 'Absent' | 'Leave' | 'Late';
->>>>>>> 2eb72eb (Initial commit)
   createdAt: Date;
   updatedAt: Date;
 }
 
 const attendanceSchema = new Schema<IAttendance>(
   {
-<<<<<<< HEAD
     userId: {
       type: String,
       required: true,
       ref: 'User',
     },
-=======
->>>>>>> 2eb72eb (Initial commit)
     employeeId: {
       type: String,
       required: true,
@@ -86,7 +72,6 @@ const attendanceSchema = new Schema<IAttendance>(
       type: String,
     },
     punchInLocation: {
-<<<<<<< HEAD
       latitude: Number,
       longitude: Number,
       address: String,
@@ -115,13 +100,6 @@ const attendanceSchema = new Schema<IAttendance>(
       ioMode: String,
       workCode: Number,
     },
-=======
-      type: String,
-    },
-    punchOutLocation: {
-      type: String,
-    },
->>>>>>> 2eb72eb (Initial commit)
     totalHours: {
       type: Number,
       default: 0,
@@ -132,7 +110,6 @@ const attendanceSchema = new Schema<IAttendance>(
     },
     status: {
       type: String,
-<<<<<<< HEAD
       enum: ['Present', 'Absent', 'Leave', 'Late', 'Half-Day'],
       default: 'Present',
     },
@@ -169,21 +146,13 @@ const attendanceSchema = new Schema<IAttendance>(
     notes: {
       type: String,
     },
-=======
-      enum: ['Present', 'Absent', 'Leave', 'Late'],
-      default: 'Present',
-    },
->>>>>>> 2eb72eb (Initial commit)
   },
   {
     timestamps: true,
   }
 );
 
-<<<<<<< HEAD
 // Compound index for unique attendance per user per day
 attendanceSchema.index({ userId: 1, date: 1 }, { unique: true });
 
-=======
->>>>>>> 2eb72eb (Initial commit)
 export const Attendance = mongoose.model<IAttendance>('Attendance', attendanceSchema);

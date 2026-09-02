@@ -3,7 +3,6 @@ import mongoose, { Document, Schema } from 'mongoose';
 export interface IUser extends Document {
   email: string;
   password: string;
-<<<<<<< HEAD
   employeeId: string;
   role: 'superadmin' | 'hr_manager' | 'accounts' | 'employee' | 'support';
   isActive: boolean;
@@ -32,24 +31,10 @@ export interface IUser extends Document {
   passportNumber?: string;
   
   // Contact Information
-=======
-  employeeId?: string;
-  employeeCode?: string;
-  role: 'superadmin' | 'hr_manager' | 'accounts' | 'employee' | 'support';
-  isActive: boolean;
-  lastLogin?: Date;
-  firstName?: string;
-  lastName?: string;
-  dateOfBirth?: Date;
-  gender?: string;
-  maritalStatus?: string;
-  bloodGroup?: string;
->>>>>>> 2eb72eb (Initial commit)
   mobile?: string;
   alternativeMobile?: string;
   currentAddress?: string;
   permanentAddress?: string;
-<<<<<<< HEAD
   city?: string;
   state?: string;
   country?: string;
@@ -131,21 +116,11 @@ export interface IUser extends Document {
     proficiency: 'basic' | 'intermediate' | 'advanced' | 'fluent';
   }>;
   
-=======
-  designation?: string;
-  department?: string;
-  branch?: string;
-  employmentType?: string;
-  highestQualification?: string;
-  collegeName?: string;
-  passingYear?: string;
->>>>>>> 2eb72eb (Initial commit)
   createdAt: Date;
   updatedAt: Date;
 }
 
 export interface CreateUserInput {
-<<<<<<< HEAD
   employeeId?: string;
   email: string;
   password: string;
@@ -164,12 +139,6 @@ export interface CreateUserInput {
   address?: string;
   designation?: string;
   company?: string;
-=======
-  employeeId: string;
-  email: string;
-  password: string;
-  role: 'superadmin' | 'hr_manager' | 'accounts' | 'employee' | 'support';
->>>>>>> 2eb72eb (Initial commit)
 }
 
 const userSchema = new Schema<IUser>(
@@ -187,14 +156,7 @@ const userSchema = new Schema<IUser>(
     },
     employeeId: {
       type: String,
-<<<<<<< HEAD
       required: true,
-=======
-      ref: 'Employee',
-    },
-    employeeCode: {
-      type: String,
->>>>>>> 2eb72eb (Initial commit)
       unique: true,
     },
     role: {
@@ -209,7 +171,6 @@ const userSchema = new Schema<IUser>(
     lastLogin: {
       type: Date,
     },
-<<<<<<< HEAD
     
     // Personal Information
     firstName: {
@@ -228,35 +189,21 @@ const userSchema = new Schema<IUser>(
     },
     phone: {
       type: String,
-=======
-    firstName: {
-      type: String,
-    },
-    lastName: {
-      type: String,
->>>>>>> 2eb72eb (Initial commit)
     },
     dateOfBirth: {
       type: Date,
     },
     gender: {
       type: String,
-<<<<<<< HEAD
       enum: ['male', 'female', 'other'],
     },
     maritalStatus: {
       type: String,
       enum: ['single', 'married', 'divorced', 'widowed'],
-=======
-    },
-    maritalStatus: {
-      type: String,
->>>>>>> 2eb72eb (Initial commit)
     },
     bloodGroup: {
       type: String,
     },
-<<<<<<< HEAD
     nationality: {
       type: String,
     },
@@ -292,8 +239,6 @@ const userSchema = new Schema<IUser>(
     },
     
     // Contact Information
-=======
->>>>>>> 2eb72eb (Initial commit)
     mobile: {
       type: String,
     },
@@ -306,7 +251,6 @@ const userSchema = new Schema<IUser>(
     permanentAddress: {
       type: String,
     },
-<<<<<<< HEAD
     city: {
       type: String,
     },
@@ -364,10 +308,6 @@ const userSchema = new Schema<IUser>(
     designation: {
       type: String,
       default: '',
-=======
-    designation: {
-      type: String,
->>>>>>> 2eb72eb (Initial commit)
     },
     department: {
       type: String,
@@ -377,7 +317,6 @@ const userSchema = new Schema<IUser>(
     },
     employmentType: {
       type: String,
-<<<<<<< HEAD
       enum: ['full-time', 'part-time', 'contract', 'intern'],
     },
     company: {
@@ -428,9 +367,6 @@ const userSchema = new Schema<IUser>(
     },
     
     // Education
-=======
-    },
->>>>>>> 2eb72eb (Initial commit)
     highestQualification: {
       type: String,
     },
@@ -440,7 +376,6 @@ const userSchema = new Schema<IUser>(
     passingYear: {
       type: String,
     },
-<<<<<<< HEAD
     education: [{
       degree: {
         type: String,
@@ -554,15 +489,12 @@ const userSchema = new Schema<IUser>(
         default: 'basic',
       },
     }],
-=======
->>>>>>> 2eb72eb (Initial commit)
   },
   {
     timestamps: true,
   }
 );
 
-<<<<<<< HEAD
 // Pre-save hook to auto-generate employeeId if not provided
 userSchema.pre<IUser>('save', async function () {
   if (!this.employeeId) {
@@ -587,6 +519,4 @@ userSchema.pre<IUser>('save', async function () {
   }
 });
 
-=======
->>>>>>> 2eb72eb (Initial commit)
 export const User = mongoose.model<IUser>('User', userSchema);

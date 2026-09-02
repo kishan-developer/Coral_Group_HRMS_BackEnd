@@ -1,10 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { Leave } from '../../models/leave.model';
-<<<<<<< HEAD
 import { User } from '../../models/user.model';
-=======
-import { Employee } from '../../models/employee.model';
->>>>>>> 2eb72eb (Initial commit)
 import { AppError } from '../../middleware/error.middleware';
 import { validationResult } from 'express-validator';
 
@@ -18,17 +14,10 @@ export class LeaveController {
       if (status) filter.status = status;
       if (leaveType) filter.leaveType = leaveType;
 
-<<<<<<< HEAD
       let query = Leave.find(filter).sort({ createdAt: -1 });
       
       if (departmentId && typeof departmentId === 'string') {
         const employeeIds = await User.find({ departmentId, role: 'employee' }).distinct('_id');
-=======
-      let query = Leave.find(filter).populate('employeeId').sort({ createdAt: -1 });
-      
-      if (departmentId && typeof departmentId === 'string') {
-        const employeeIds = await Employee.find({ departmentId }).distinct('_id');
->>>>>>> 2eb72eb (Initial commit)
         query = query.where('employeeId').in(employeeIds);
       }
 
@@ -86,7 +75,6 @@ export class LeaveController {
 
       const { employeeId, leaveType, fromDate, toDate, reason, attachmentUrl } = req.body;
       
-<<<<<<< HEAD
       // If employeeId looks like a userId (MongoDB ObjectId), look up the user's employeeId
       let targetEmployeeId = employeeId;
       const user = await User.findById(employeeId);
@@ -98,12 +86,6 @@ export class LeaveController {
 
       const leave = await Leave.create({
         employeeId: targetEmployeeId,
-=======
-      const totalDays = this.calculateDays(fromDate, toDate);
-
-      const leave = await Leave.create({
-        employeeId,
->>>>>>> 2eb72eb (Initial commit)
         leaveType,
         fromDate: new Date(fromDate),
         toDate: new Date(toDate),
@@ -253,7 +235,6 @@ export class LeaveController {
       const { employeeId } = req.params;
       const year = new Date().getFullYear();
 
-<<<<<<< HEAD
       // If employeeId looks like a userId (MongoDB ObjectId), look up the user's employeeId
       let targetEmployeeId = employeeId;
       const user = await User.findById(employeeId);
@@ -263,10 +244,6 @@ export class LeaveController {
 
       const leaves = await Leave.find({
         employeeId: targetEmployeeId,
-=======
-      const leaves = await Leave.find({
-        employeeId,
->>>>>>> 2eb72eb (Initial commit)
         status: 'Approved',
         fromDate: { $gte: new Date(`${year}-01-01`) },
         toDate: { $lte: new Date(`${year}-12-31`) },
@@ -277,7 +254,6 @@ export class LeaveController {
         return acc;
       }, {});
 
-<<<<<<< HEAD
       // Calculate remaining balance (subtract used from total)
       const totalBalances = {
         'Casual Leave': 12,
@@ -296,11 +272,6 @@ export class LeaveController {
       res.status(200).json({
         success: true,
         data: remainingBalance,
-=======
-      res.status(200).json({
-        success: true,
-        data: balance,
->>>>>>> 2eb72eb (Initial commit)
         message: 'Leave balance retrieved successfully',
       });
     } catch (error) {
@@ -313,17 +284,10 @@ export class LeaveController {
     try {
       const { departmentId } = req.query;
 
-<<<<<<< HEAD
       let query = Leave.find({ status: 'Pending' }).sort({ createdAt: -1 });
 
       if (departmentId && typeof departmentId === 'string') {
         const employeeIds = await User.find({ departmentId, role: 'employee' }).distinct('_id');
-=======
-      let query = Leave.find({ status: 'Pending' }).populate('employeeId').sort({ createdAt: -1 });
-
-      if (departmentId && typeof departmentId === 'string') {
-        const employeeIds = await Employee.find({ departmentId }).distinct('_id');
->>>>>>> 2eb72eb (Initial commit)
         query = query.where('employeeId').in(employeeIds);
       }
 
@@ -340,7 +304,6 @@ export class LeaveController {
     }
   };
 
-<<<<<<< HEAD
   getMyLeaveRequests = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const userId = (req as any).userId;
@@ -386,8 +349,6 @@ export class LeaveController {
     }
   };
 
-=======
->>>>>>> 2eb72eb (Initial commit)
   private calculateDays(fromDate: string, toDate: string): number {
     const start = new Date(fromDate);
     const end = new Date(toDate);

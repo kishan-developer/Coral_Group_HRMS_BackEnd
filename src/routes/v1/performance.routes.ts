@@ -19,10 +19,7 @@ const updatePerformanceValidation = [
   body('status').optional().isIn(['High Performer', 'On Track', 'Needs Improvement', 'Low Performer', 'On Watchlist']).withMessage('Invalid status'),
 ];
 
-<<<<<<< HEAD
 // Performance routes
-=======
->>>>>>> 2eb72eb (Initial commit)
 router.get('/', authMiddleware, performanceController.getAllPerformance);
 router.get('/:id', authMiddleware, param('id').isMongoId(), performanceController.getPerformanceById);
 router.get('/employee/:employeeId', authMiddleware, param('employeeId').isMongoId(), performanceController.getEmployeePerformance);
@@ -31,13 +28,10 @@ router.put('/:id', authMiddleware, param('id').isMongoId(), updatePerformanceVal
 router.get('/summary', authMiddleware, performanceController.getPerformanceSummary);
 router.get('/analytics', authMiddleware, performanceController.getPerformanceAnalytics);
 
-<<<<<<< HEAD
 // Feedback routes (must come before /:id)
 router.get('/feedback', authMiddleware, performanceController.getFeedback);
 router.get('/feedback/:id', authMiddleware, param('id').notEmpty(), performanceController.getFeedbackById);
 router.post('/feedback', authMiddleware, performanceController.createFeedback);
 router.put('/feedback/:id', authMiddleware, param('id').notEmpty(), performanceController.updateFeedback);
 
-=======
->>>>>>> 2eb72eb (Initial commit)
 export default router;

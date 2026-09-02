@@ -1,10 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { Overtime } from '../../models/overtime.model';
-<<<<<<< HEAD
 import { User } from '../../models/user.model';
-=======
-import { Employee } from '../../models/employee.model';
->>>>>>> 2eb72eb (Initial commit)
 import { AppError } from '../../middleware/error.middleware';
 import { validationResult } from 'express-validator';
 
@@ -18,17 +14,10 @@ export class OvertimeController {
       if (status) filter.status = status;
       if (otType) filter.otType = otType;
 
-<<<<<<< HEAD
       let query = Overtime.find(filter).sort({ date: -1 });
       
       if (departmentId && typeof departmentId === 'string') {
         const employeeIds = await User.find({ departmentId, role: 'employee' }).distinct('_id');
-=======
-      let query = Overtime.find(filter).populate('employeeId').sort({ date: -1 });
-      
-      if (departmentId && typeof departmentId === 'string') {
-        const employeeIds = await Employee.find({ departmentId }).distinct('_id');
->>>>>>> 2eb72eb (Initial commit)
         query = query.where('employeeId').in(employeeIds);
       }
 
@@ -223,11 +212,7 @@ export class OvertimeController {
       ];
 
       if (departmentId && typeof departmentId === 'string') {
-<<<<<<< HEAD
         const employeeIds = await User.find({ departmentId, role: 'employee' }).distinct('_id');
-=======
-        const employeeIds = await Employee.find({ departmentId }).distinct('_id');
->>>>>>> 2eb72eb (Initial commit)
         pipeline.push({ $match: { employeeId: { $in: employeeIds.map(id => id.toString()) } } });
       }
 

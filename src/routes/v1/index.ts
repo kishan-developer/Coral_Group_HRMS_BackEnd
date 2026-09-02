@@ -6,10 +6,7 @@ import shiftRoutes from './shift.routes';
 import departmentRoutes from './department.routes';
 import overtimeRoutes from './overtime.routes';
 import regularizationRoutes from './regularization.routes';
-<<<<<<< HEAD
 import attendanceRoutes from './attendance.routes';
-=======
->>>>>>> 2eb72eb (Initial commit)
 import leaveRoutes from './leave.routes';
 import performanceRoutes from './performance.routes';
 import kpiRoutes from './kpi.routes';
@@ -26,7 +23,6 @@ import supportRoutes from './support.routes';
 import onboardingRoutes from './onboarding.routes';
 import publicRoutes from './public.routes';
 import newjoiningRoutes from './newjoining.routes';
-<<<<<<< HEAD
 import recruitmentRoutes from './recruitment.routes';
 import assetsRoutes from './assets.routes';
 import offboardingRoutes from './offboarding.routes';
@@ -42,21 +38,13 @@ import brochureRoutes from './brochure.routes';
 const router = Router();
 
 
-=======
-
-const router = Router();
-
->>>>>>> 2eb72eb (Initial commit)
 router.use('/auth', authRoutes);
 router.use('/employees', employeeRoutes);
 router.use('/shifts', shiftRoutes);
 router.use('/departments', departmentRoutes);
 router.use('/overtime', overtimeRoutes);
 router.use('/regularization', regularizationRoutes);
-<<<<<<< HEAD
 router.use('/attendance', attendanceRoutes);
-=======
->>>>>>> 2eb72eb (Initial commit)
 router.use('/leaves', leaveRoutes);
 router.use('/performance', performanceRoutes);
 router.use('/kpis', kpiRoutes);
@@ -73,7 +61,6 @@ router.use('/support', supportRoutes);
 router.use('/onboarding', onboardingRoutes);
 router.use('/public', publicRoutes);
 router.use('/newjoining', newjoiningRoutes);
-<<<<<<< HEAD
 router.use('/recruitment', recruitmentRoutes);
 router.use('/assets', assetsRoutes);
 router.use('/offboarding', offboardingRoutes);
@@ -85,7 +72,5 @@ router.use('/dashboard', dashboardRoutes);
 router.use('/attendance-machines', attendanceMachinesRoutes);
 router.use('/queries', queryRoutes);
 router.use('/brochure', brochureRoutes);
-=======
->>>>>>> 2eb72eb (Initial commit)
 
 export default router;

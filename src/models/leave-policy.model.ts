@@ -7,6 +7,10 @@ export interface ILeavePolicy extends Document {
   maternityLeaveDays: number;
   paternityLeaveDays: number;
   unpaidLeaveDays: number;
+  monthlyCLAccrual: number;
+  monthlyPLAccrual: number;
+  probationMonthsForPL: number;
+  autoConsumptionOrder: string[];
   carryForwardEnabled: boolean;
   leaveEncashmentEnabled: boolean;
   sandwichLeaveRule: boolean;
@@ -42,6 +46,22 @@ const leavePolicySchema = new Schema<ILeavePolicy>(
     unpaidLeaveDays: {
       type: Number,
       default: 0,
+    },
+    monthlyCLAccrual: {
+      type: Number,
+      default: 1.0,
+    },
+    monthlyPLAccrual: {
+      type: Number,
+      default: 1.25,
+    },
+    probationMonthsForPL: {
+      type: Number,
+      default: 6,
+    },
+    autoConsumptionOrder: {
+      type: [String],
+      default: ['CL', 'PL', 'LWP'],
     },
     carryForwardEnabled: {
       type: Boolean,

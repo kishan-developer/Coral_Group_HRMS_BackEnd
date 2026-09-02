@@ -1,13 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
-<<<<<<< HEAD
 import { Attendance } from '../../models/attendance.model';
 import { Reimbursement } from '../../models/reimbursement.model';
 import { User } from '../../models/user.model';
-=======
-import { Employee } from '../../models/employee.model';
-import { Attendance } from '../../models/attendance.model';
-import { Reimbursement } from '../../models/reimbursement.model';
->>>>>>> 2eb72eb (Initial commit)
 import { AppError } from '../../middleware/error.middleware';
 
 export class PayslipsController {
@@ -81,17 +75,8 @@ export class PayslipsController {
     try {
       const { employeeId, month, year } = req.body;
 
-<<<<<<< HEAD
       // Since we're using the User model now, we need to handle employeeId as a string
       // The employee data is now in the User model
-=======
-      const employee = await Employee.findById(employeeId).populate('departmentId');
-
-      if (!employee) {
-        throw new AppError('Employee not found', 404, 'EMPLOYEE_NOT_FOUND');
-      }
-
->>>>>>> 2eb72eb (Initial commit)
       const startDate = new Date(Number(year), Number(month) - 1, 1);
       const endDate = new Date(Number(year), Number(month), 0, 23, 59, 59);
 
@@ -142,17 +127,7 @@ export class PayslipsController {
 
       const payslip = {
         id: `${employeeId}-${year}-${month}`,
-<<<<<<< HEAD
         employeeId: employeeId,
-=======
-        employee: {
-          id: employee._id,
-          employeeId: employee.employeeId,
-          name: `${employee.firstName} ${employee.lastName}`,
-          email: employee.email,
-          department: (employee as any).departmentId?.name || '',
-        },
->>>>>>> 2eb72eb (Initial commit)
         period: {
           month: Number(month),
           year: Number(year),
@@ -191,7 +166,6 @@ export class PayslipsController {
       next(error);
     }
   };
-<<<<<<< HEAD
 
   getMyPayslips = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
@@ -348,6 +322,4 @@ export class PayslipsController {
       next(error);
     }
   };
-=======
->>>>>>> 2eb72eb (Initial commit)
 }

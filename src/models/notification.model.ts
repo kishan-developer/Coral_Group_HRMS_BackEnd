@@ -1,6 +1,5 @@
 import mongoose, { Document, Schema } from 'mongoose';
 
-<<<<<<< HEAD
 // Notification Types
 export enum NotificationType {
   GENERAL = 'General',
@@ -309,47 +308,12 @@ const notificationSchema = new Schema<INotification>(
     
     // Soft Delete
     deletedAt: Date,
-=======
-export interface INotification extends Document {
-  userId: string;
-  type: string;
-  title: string;
-  message: string;
-  isRead: boolean;
-  createdAt: Date;
-  updatedAt: Date;
-}
-
-const notificationSchema = new Schema<INotification>(
-  {
-    userId: {
-      type: String,
-      required: true,
-    },
-    type: {
-      type: String,
-      required: true,
-    },
-    title: {
-      type: String,
-      required: true,
-    },
-    message: {
-      type: String,
-      required: true,
-    },
-    isRead: {
-      type: Boolean,
-      default: false,
-    },
->>>>>>> 2eb72eb (Initial commit)
   },
   {
     timestamps: true,
   }
 );
 
-<<<<<<< HEAD
 // Indexes for better query performance
 notificationSchema.index({ companyId: 1, status: 1 });
 notificationSchema.index({ createdBy: 1, createdAt: -1 });
@@ -357,6 +321,4 @@ notificationSchema.index({ 'schedule.scheduledFor': 1, status: 1 });
 notificationSchema.index({ type: 1, priority: 1 });
 notificationSchema.index({ deletedAt: 1 });
 
-=======
->>>>>>> 2eb72eb (Initial commit)
 export const Notification = mongoose.model<INotification>('Notification', notificationSchema);
