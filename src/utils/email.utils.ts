@@ -34,6 +34,14 @@ export const verifySMTPConnection = async (): Promise<boolean> => {
   }
 };
 
+const stripHtmlToText = (html: string): string => {
+  return html
+    .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
+    .replace(/<[^>]*>/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+};
+
 export const sendEmail = async (
   to: string,
   subject: string,
@@ -41,11 +49,15 @@ export const sendEmail = async (
 ): Promise<void> => {
   try {
     const transporter = getTransporter();
+    const fromAddress = process.env.SMTP_FROM || process.env.SMTP_USER || 'admin@coral-group.in';
+    const text = stripHtmlToText(html);
+
     await transporter.sendMail({
-      from: `"Coral Group HRMS" <${process.env.SMTP_USER}>`,
+      from: `"Coral Group HRMS" <${fromAddress}>`,
       to,
       subject,
       html,
+      text,
     });
     console.log(`Email sent to ${to}`);
   } catch (error) {
@@ -54,11 +66,7 @@ export const sendEmail = async (
       console.log('--------------------------------------------------');
       console.log(`DEVELOPMENT FALLBACK: Email Details for ${to}`);
       console.log(`Subject: ${subject}`);
-      const textOnly = html
-        .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
-        .replace(/<[^>]*>/g, ' ')
-        .replace(/\s+/g, ' ')
-        .trim();
+      const textOnly = stripHtmlToText(html);
       console.log(`Body (Text): ${textOnly}`);
       console.log('--------------------------------------------------');
       return;
@@ -306,17 +314,19 @@ export const sendVerificationOTPEmail = async (
   email: string,
   otp: string
 ): Promise<void> => {
+  const expiryMins = process.env.OTP_EXPIRY_MINUTES || '15';
   const subject = '🔐 Verify Your Email - Coral Group HRMS';
-  const preheader = `Your 6-digit verification code is ${otp}. Valid for 5 minutes.`;
+  const preheader = `Your 6-digit verification code is ${otp}. Valid for ${expiryMins} minutes.`;
 
   const contentHtml = `
-    <h2 class="headline">Email Verification Request</h2>
-    <p>Welcome to <strong>Coral Group HRMS</strong>! To complete your account setup and verify your email address, please use the 6-digit One-Time Password (OTP) code below.</p>
+    <h2 class="headline">Verify Your Email</h2>
+    <p>Dear User,</p>
+    <p>Thank you for registering with <strong>Coral Group HRMS</strong>. Please use the following OTP to verify your email address:</p>
 
     <div class="otp-box">
       <div class="otp-tag">Official Verification Code</div>
       <div class="otp-number">${otp}</div>
-      <div class="otp-timer">⏱ Valid for 5 Minutes • Single Use Only</div>
+      <div class="otp-timer">⏱ This OTP will expire in ${expiryMins} minutes • Single Use Only</div>
     </div>
 
     <div class="info-card">
@@ -324,15 +334,15 @@ export const sendVerificationOTPEmail = async (
       <ul>
         <li>Enter this code in the verification field on the registration portal.</li>
         <li>Never share this verification code with anyone.</li>
-        <li>This code will automatically expire in 5 minutes.</li>
+        <li>This OTP will expire in ${expiryMins} minutes.</li>
       </ul>
     </div>
 
     <div class="warning-card">
-      <strong>Didn't request this?</strong> If you did not sign up for a Coral Group HRMS account, please safely ignore this email. No account will be created without verification.
+      If you did not request this verification, please ignore this email.
     </div>
 
-    <p style="margin-top: 28px;">Best regards,<br><strong style="color: #f8fafc;">Coral Group Security Team</strong></p>
+    <p style="margin-top: 28px;">Best regards,<br><strong style="color: #f8fafc;">Coral Group HRMS Team</strong></p>
   `;
 
   const html = getBaseEmailTemplate({
@@ -348,8 +358,9 @@ export const sendPasswordResetOTPEmail = async (
   email: string,
   otp: string
 ): Promise<void> => {
+  const expiryMins = process.env.OTP_EXPIRY_MINUTES || '15';
   const subject = '🔑 Password Reset OTP - Coral Group HRMS';
-  const preheader = `Your 6-digit password reset code is ${otp}. Valid for 5 minutes.`;
+  const preheader = `Your 6-digit password reset code is ${otp}. Valid for ${expiryMins} minutes.`;
   const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
   const resetLink = `${frontendUrl.trim().replace(/\/+$/, '')}/auth/reset-password?email=${encodeURIComponent(email)}`;
 
@@ -360,7 +371,7 @@ export const sendPasswordResetOTPEmail = async (
     <div class="otp-box">
       <div class="otp-tag">Password Reset OTP</div>
       <div class="otp-number">${otp}</div>
-      <div class="otp-timer">⏱ Valid for 5 Minutes • Confidential</div>
+      <div class="otp-timer">⏱ Valid for ${expiryMins} Minutes • Confidential</div>
     </div>
 
     <div style="text-align: center; margin: 28px 0;">

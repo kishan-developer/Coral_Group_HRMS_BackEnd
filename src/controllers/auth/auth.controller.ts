@@ -21,6 +21,9 @@ import {
   sendPasswordResetSuccessEmail,
 } from '../../utils/email.utils';
 
+const OTP_EXPIRY_MINUTES = parseInt(process.env.OTP_EXPIRY_MINUTES || '15', 10);
+const OTP_EXPIRY_MS = OTP_EXPIRY_MINUTES * 60 * 1000;
+
 // Register - Step 1: Send OTP to email without creating user
 export const register = async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -63,7 +66,7 @@ export const register = async (req: Request, res: Response, next: NextFunction) 
     await OTP.create({
       type: 'registration',
       otp,
-      expiresAt: new Date(Date.now() + 10 * 60 * 1000), // 10 minutes
+      expiresAt: new Date(Date.now() + OTP_EXPIRY_MS), // 15 minutes
       metadata: {
         firstName,
         lastName,
@@ -469,7 +472,7 @@ export const forgotPassword = async (req: Request, res: Response, next: NextFunc
       userId: user._id,
       type: 'password_reset',
       otp,
-      expiresAt: new Date(Date.now() + 10 * 60 * 1000), // 10 minutes
+      expiresAt: new Date(Date.now() + OTP_EXPIRY_MS), // 15 minutes
     });
 
     await sendPasswordResetOTPEmail(email, otp);
@@ -580,7 +583,7 @@ export const resendOTP = async (req: Request, res: Response, next: NextFunction)
       await OTP.create({
         type: 'registration',
         otp,
-        expiresAt: new Date(Date.now() + 10 * 60 * 1000), // 10 minutes
+        expiresAt: new Date(Date.now() + OTP_EXPIRY_MS), // 15 minutes
         metadata: lastOtp?.metadata || { email: targetEmail, role: 'employee' },
         ipAddress: req.ip,
       });
@@ -605,7 +608,7 @@ export const resendOTP = async (req: Request, res: Response, next: NextFunction)
       userId,
       type,
       otp,
-      expiresAt: new Date(Date.now() + 10 * 60 * 1000),
+      expiresAt: new Date(Date.now() + OTP_EXPIRY_MS), // 15 minutes
     });
 
     const user = await User.findById(userId);
