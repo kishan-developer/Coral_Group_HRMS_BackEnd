@@ -6,7 +6,6 @@ import {
   logout,
   refreshToken,
   verifyEmailOTP,
-  forgotPassword,
   resetPassword,
   resendOTP,
 } from '../../controllers/auth/auth.controller';
@@ -20,7 +19,6 @@ router.post('/login', login);
 router.post('/logout', logout);
 router.post('/refresh-token', refreshToken);
 router.post('/verify-email', verifyEmailOTP);
-router.post('/forgot-password', forgotPassword);
 router.post('/reset-password', resetPassword);
 router.post('/resend-otp', resendOTP);
 

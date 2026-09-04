@@ -5,6 +5,7 @@ const MONGODB_URI = process.env.MONGODB_URI || process.env.MONGODB_URL || 'mongo
 export const connectDatabase = async (): Promise<boolean> => {
   try {
 
+    console.log('Connecting to MONGODB_URI:', MONGODB_URI);
     await mongoose.connect(MONGODB_URI, {
       serverSelectionTimeoutMS: 30000, // 30 seconds timeout
       socketTimeoutMS: 45000, // 45 seconds socket timeout

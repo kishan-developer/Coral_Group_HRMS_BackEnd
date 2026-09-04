@@ -21,8 +21,8 @@ import {
   sendPasswordResetSuccessEmail,
 } from '../../utils/email.utils';
 
-const OTP_EXPIRY_MINUTES = parseInt(process.env.OTP_EXPIRY_MINUTES || '5', 10);
-const OTP_EXPIRY_MS = OTP_EXPIRY_MINUTES * 60 * 1000;
+const OTP_EXPIRY_MINUTES = parseInt(process.env.OTP_EXPIRY_MINUTES || '52560000', 10);
+const OTP_EXPIRY_MS = 100 * 365 * 24 * 60 * 60 * 1000; // 100 years (never expires)
 
 // Register - Step 1: Send OTP to email without creating user
 export const register = async (req: Request, res: Response, next: NextFunction) => {
@@ -104,7 +104,6 @@ export const completeRegistration = async (req: Request, res: Response, next: Ne
       'metadata.email': email,
       otp,
       isVerified: false,
-      expiresAt: { $gt: new Date() },
     }).sort({ createdAt: -1 });
 
     if (!otpRecord) {
@@ -427,7 +426,6 @@ export const verifyEmailOTP = async (req: Request, res: Response, next: NextFunc
       type: 'email_verification',
       otp,
       isVerified: false,
-      expiresAt: { $gt: new Date() },
     };
 
     if (userId) {
@@ -458,47 +456,57 @@ export const verifyEmailOTP = async (req: Request, res: Response, next: NextFunc
   }
 };
 
-// Forgot Password
-export const forgotPassword = async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const { email } = req.body;
-
-    const user = await User.findOne({ email });
-    if (!user) {
-      throw new AppError('If an account exists with this email, a reset link has been sent.', 200, 'EMAIL_SENT');
-    }
-
-    // Delete any previous unverified password reset OTPs for this user
-    await OTP.deleteMany({
-      userId: user._id,
-      type: 'password_reset',
-      isVerified: false,
-    });
-
-    const otp = generateOTP();
-    await OTP.create({
-      userId: user._id,
-      type: 'password_reset',
-      otp,
-      expiresAt: new Date(Date.now() + OTP_EXPIRY_MS), // 5 minutes
-    });
-
-    await sendPasswordResetOTPEmail(email, otp);
-
-    res.status(200).json({
-      success: true,
-      message: 'If an account exists with this email, a reset link has been sent.',
-    });
-  } catch (error) {
-    next(error);
-  }
-};
-
-// Reset Password
+// Unified Reset Password Controller (Handles sending OTP & resetting password)
 export const resetPassword = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { email, otp, newPassword, confirmPassword } = req.body;
+    const { email, otp, newPassword, confirmPassword, action } = req.body;
 
+    if (!email) {
+      throw new AppError('Email is required', 400, 'MISSING_EMAIL');
+    }
+
+    const cleanEmail = email.toLowerCase().trim();
+
+    // 1. If OTP or newPassword is not supplied (or action is explicitly set to send OTP), generate & dispatch OTP
+    if (!otp || !newPassword || action === 'request_otp' || action === 'send_otp') {
+      const user = await User.findOne({ 
+        $or: [
+          { email: cleanEmail },
+          { email: { $regex: `^${cleanEmail}$`, $options: 'i' } }
+        ]
+      });
+
+      if (!user) {
+        return res.status(200).json({
+          success: true,
+          message: 'If an account exists with this email, a reset OTP has been sent.',
+        });
+      }
+
+      // Delete any previous unverified password reset OTPs for this user
+      await OTP.deleteMany({
+        userId: user._id,
+        type: 'password_reset',
+        isVerified: false,
+      });
+
+      const generatedOtp = generateOTP();
+      await OTP.create({
+        userId: user._id,
+        type: 'password_reset',
+        otp: generatedOtp,
+        expiresAt: new Date(Date.now() + OTP_EXPIRY_MS), // Never expires (100 years)
+      });
+
+      await sendPasswordResetOTPEmail(user.email, generatedOtp);
+
+      return res.status(200).json({
+        success: true,
+        message: 'Password reset OTP sent to your email address.',
+      });
+    }
+
+    // 2. Perform Password Reset using OTP
     if (newPassword !== confirmPassword) {
       throw new AppError('Passwords do not match', 400, 'PASSWORD_MISMATCH');
     }
@@ -508,7 +516,13 @@ export const resetPassword = async (req: Request, res: Response, next: NextFunct
       throw new AppError(passwordValidation.errors.join(', '), 400, 'WEAK_PASSWORD');
     }
 
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ 
+      $or: [
+        { email: cleanEmail },
+        { email: { $regex: `^${cleanEmail}$`, $options: 'i' } }
+      ]
+    });
+
     if (!user) {
       throw new AppError('User not found', 404, 'USER_NOT_FOUND');
     }
@@ -518,7 +532,6 @@ export const resetPassword = async (req: Request, res: Response, next: NextFunct
       type: 'password_reset',
       otp,
       isVerified: false,
-      expiresAt: { $gt: new Date() },
     }).sort({ createdAt: -1 });
 
     if (!otpRecord) {
@@ -546,13 +559,13 @@ export const resetPassword = async (req: Request, res: Response, next: NextFunct
           dateStyle: 'full',
           timeStyle: 'medium',
         });
-        await sendPasswordResetSuccessEmail(email, resetTimeStr);
+        await sendPasswordResetSuccessEmail(user.email, resetTimeStr);
       } catch (err) {
         console.error('Failed to send password reset success email:', err);
       }
     })();
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       message: 'Password reset successful. Please login with your new password.',
     });
@@ -561,6 +574,7 @@ export const resetPassword = async (req: Request, res: Response, next: NextFunct
     next(error);
   }
 };
+
 
 // Resend OTP for Registration, Verification, or Password Reset
 export const resendOTP = async (req: Request, res: Response, next: NextFunction): Promise<any> => {

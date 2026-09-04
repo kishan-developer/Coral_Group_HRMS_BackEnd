@@ -76,7 +76,8 @@ export const sendEmail = async (
 };
 
 /**
- * Base Responsive HTML Email Wrapper with Modern Dark Glassmorphism Styling & Logo Header
+ * Standard Professional Dark Theme Email Wrapper
+ * Consistent styling across all Coral Group HRMS emails without emojis
  */
 const getBaseEmailTemplate = ({
   title,
@@ -128,9 +129,9 @@ const getBaseEmailTemplate = ({
           margin: 0 auto;
           background: #141b2d;
           border: 1px solid #222f47;
-          border-radius: 20px;
+          border-radius: 16px;
           overflow: hidden;
-          box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+          box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
         }
         .header-bar {
           background: linear-gradient(135deg, #182238 0%, #0f172a 100%);
@@ -144,7 +145,7 @@ const getBaseEmailTemplate = ({
           justify-content: center;
           background: #ffffff;
           padding: 8px 16px;
-          border-radius: 12px;
+          border-radius: 10px;
           margin-bottom: 14px;
           box-shadow: 0 4px 12px rgba(0,0,0,0.2);
         }
@@ -184,8 +185,8 @@ const getBaseEmailTemplate = ({
         .otp-box {
           background: linear-gradient(135deg, rgba(148, 203, 61, 0.12) 0%, rgba(148, 203, 61, 0.04) 100%);
           border: 2px dashed #94cb3d;
-          border-radius: 16px;
-          padding: 28px 20px;
+          border-radius: 14px;
+          padding: 26px 20px;
           margin: 28px 0;
           text-align: center;
         }
@@ -204,7 +205,7 @@ const getBaseEmailTemplate = ({
           letter-spacing: 12px;
           color: #ffffff;
           margin: 10px 0;
-          text-shadow: 0 0 12px rgba(148, 203, 61, 0.4);
+          text-shadow: 0 0 12px rgba(148, 203, 61, 0.3);
         }
         .otp-timer {
           display: inline-block;
@@ -255,12 +256,24 @@ const getBaseEmailTemplate = ({
         }
         .badge-status {
           display: inline-block;
-          padding: 6px 16px;
+          padding: 6px 18px;
           border-radius: 20px;
           font-size: 13px;
           font-weight: 700;
           text-transform: uppercase;
           letter-spacing: 1px;
+        }
+        .btn-primary {
+          display: inline-block;
+          background: #94cb3d;
+          color: #0b0f17;
+          font-weight: 800;
+          padding: 14px 32px;
+          border-radius: 10px;
+          text-decoration: none;
+          font-size: 15px;
+          letter-spacing: 0.5px;
+          box-shadow: 0 4px 14px rgba(148, 203, 61, 0.3);
         }
         .footer {
           background-color: #0f172a;
@@ -310,31 +323,31 @@ const getBaseEmailTemplate = ({
   `;
 };
 
+// 1. Email Verification OTP Email
 export const sendVerificationOTPEmail = async (
   email: string,
   otp: string
 ): Promise<void> => {
-  const expiryMins = process.env.OTP_EXPIRY_MINUTES || '5';
-  const subject = '🔐 Verify Your Email - Coral Group HRMS';
-  const preheader = `Your 6-digit verification code is ${otp}. Valid for ${expiryMins} minutes.`;
+  const subject = 'Verify Your Email - Coral Group HRMS';
+  const preheader = `Your 6-digit verification code is ${otp}. Single Use Only.`;
 
   const contentHtml = `
     <h2 class="headline">Verify Your Email</h2>
     <p>Dear User,</p>
-    <p>Thank you for registering with <strong>Coral Group HRMS</strong>. Please use the following OTP to verify your email address:</p>
+    <p>Thank you for registering with <strong>Coral Group HRMS</strong>. Please use the following OTP code to verify your email address:</p>
 
     <div class="otp-box">
       <div class="otp-tag">Official Verification Code</div>
       <div class="otp-number">${otp}</div>
-      <div class="otp-timer">⏱ This OTP will expire in ${expiryMins} minutes • Single Use Only</div>
+      <div class="otp-timer">Single Use Only • Confidential</div>
     </div>
 
     <div class="info-card">
-      <h4>🔒 Security Instructions:</h4>
+      <h4>Security Instructions:</h4>
       <ul>
         <li>Enter this code in the verification field on the registration portal.</li>
         <li>Never share this verification code with anyone.</li>
-        <li>This OTP will expire in ${expiryMins} minutes.</li>
+        <li>This OTP is intended for single use.</li>
       </ul>
     </div>
 
@@ -354,13 +367,13 @@ export const sendVerificationOTPEmail = async (
   await sendEmail(email, subject, html);
 };
 
+// 2. Password Reset OTP Email
 export const sendPasswordResetOTPEmail = async (
   email: string,
   otp: string
 ): Promise<void> => {
-  const expiryMins = process.env.OTP_EXPIRY_MINUTES || '5';
-  const subject = '🔑 Password Reset OTP - Coral Group HRMS';
-  const preheader = `Your 6-digit password reset code is ${otp}. Valid for ${expiryMins} minutes.`;
+  const subject = 'Password Reset OTP - Coral Group HRMS';
+  const preheader = `Your 6-digit password reset code is ${otp}. Single Use Only.`;
   const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
   const resetLink = `${frontendUrl.trim().replace(/\/+$/, '')}/auth/reset-password?email=${encodeURIComponent(email)}`;
 
@@ -371,27 +384,27 @@ export const sendPasswordResetOTPEmail = async (
     <div class="otp-box">
       <div class="otp-tag">Password Reset OTP</div>
       <div class="otp-number">${otp}</div>
-      <div class="otp-timer">⏱ Valid for ${expiryMins} Minutes • Confidential</div>
+      <div class="otp-timer">Single Use Only • Confidential</div>
     </div>
 
     <div style="text-align: center; margin: 28px 0;">
-      <a href="${resetLink}" target="_blank" style="display: inline-block; background: #94cb3d; color: #0b0f17; font-weight: 800; padding: 14px 32px; border-radius: 12px; text-decoration: none; font-size: 15px; letter-spacing: 0.5px; box-shadow: 0 4px 14px rgba(148, 203, 61, 0.3);">
+      <a href="${resetLink}" target="_blank" class="btn-primary">
         Reset Password Now
       </a>
     </div>
 
     <div class="info-card">
-      <h4>📌 Next Steps & Security Protocol:</h4>
+      <h4>Next Steps & Security Protocol:</h4>
       <ul>
         <li>Click the button above or navigate to: <a href="${resetLink}" style="color: #38bdf8; word-break: break-all;">${resetLink}</a></li>
         <li>Enter your 6-digit OTP code <strong>${otp}</strong>.</li>
         <li>Create a strong new password with uppercase letters, numbers, and symbols.</li>
-        <li>After updating, all existing sessions will be securely signed out.</li>
+        <li>After updating, all existing active sessions will be securely terminated.</li>
       </ul>
     </div>
 
     <div class="warning-card">
-      <strong>⚠️ Security Notice:</strong> If you did not request a password reset, please ignore this email immediately and verify your account settings. Your password remains safe and unchanged.
+      <strong>Security Notice:</strong> If you did not request a password reset, please ignore this email immediately and verify your account settings. Your password remains safe and unchanged.
     </div>
 
     <p style="margin-top: 28px;">Best regards,<br><strong style="color: #f8fafc;">Coral Group HRMS Security Engine</strong></p>
@@ -406,7 +419,7 @@ export const sendPasswordResetOTPEmail = async (
   await sendEmail(email, subject, html);
 };
 
-
+// 3. Leave Approval/Rejection Email
 export const sendLeaveApprovalEmail = async (
   email: string,
   employeeName: string,
@@ -457,6 +470,7 @@ export const sendLeaveApprovalEmail = async (
   await sendEmail(email, subject, html);
 };
 
+// 4. New Leave Request Email (Manager Notification)
 export const sendLeaveRequestEmail = async (
   managerEmail: string,
   employeeName: string,
@@ -464,7 +478,7 @@ export const sendLeaveRequestEmail = async (
   fromDate: string,
   toDate: string
 ): Promise<void> => {
-  const subject = `📋 New Leave Request - ${employeeName} - Coral Group HRMS`;
+  const subject = `New Leave Request - ${employeeName} - Coral Group HRMS`;
 
   const contentHtml = `
     <h2 class="headline">Action Required: New Leave Request</h2>
@@ -493,6 +507,7 @@ export const sendLeaveRequestEmail = async (
   await sendEmail(managerEmail, subject, html);
 };
 
+// 5. Generic Email Notification
 export const sendGenericEmail = async (
   to: string | string[],
   subject: string,
@@ -510,7 +525,7 @@ export const sendGenericEmail = async (
       actionButton
         ? `
     <div style="text-align: center; margin: 30px 0;">
-      <a href="${actionButton.url}" target="_blank" style="display: inline-block; background: #94cb3d; color: #0b0f17; font-weight: 700; padding: 12px 28px; border-radius: 10px; text-decoration: none; font-size: 14px;">
+      <a href="${actionButton.url}" target="_blank" class="btn-primary">
         ${actionButton.label}
       </a>
     </div>
@@ -527,6 +542,7 @@ export const sendGenericEmail = async (
   await sendEmail(recipients, subject, html);
 };
 
+// 6. Bulk Email Sender
 export const sendBulkEmails = async (
   recipients: string[],
   subject: string,
@@ -551,6 +567,7 @@ export const sendBulkEmails = async (
   return { successCount, failureCount, errors };
 };
 
+// 7. Login Security Notification Email
 export const sendLoginSuccessEmail = async (
   email: string,
   userName: string,
@@ -558,7 +575,7 @@ export const sendLoginSuccessEmail = async (
   deviceInfo: string,
   loginTime: string
 ): Promise<void> => {
-  const subject = '🔒 Security Notification: New Login to Coral Group HRMS';
+  const subject = 'Security Notification: New Login to Coral Group HRMS';
   const preheader = `A new login to your HRMS account was detected from ${deviceInfo}.`;
 
   const contentHtml = `
@@ -567,7 +584,7 @@ export const sendLoginSuccessEmail = async (
     <p>Your <strong>Coral Group HRMS</strong> account was successfully accessed.</p>
 
     <div class="info-card">
-      <h4>💻 Login Event Details:</h4>
+      <h4>Login Event Details:</h4>
       <ul>
         <li><strong>User Email:</strong> ${email}</li>
         <li><strong>Time of Login:</strong> ${loginTime}</li>
@@ -592,11 +609,12 @@ export const sendLoginSuccessEmail = async (
   await sendEmail(email, subject, html);
 };
 
+// 8. Password Reset Success Email
 export const sendPasswordResetSuccessEmail = async (
   email: string,
   resetTime: string
 ): Promise<void> => {
-  const subject = '✅ Password Changed Successfully - Coral Group HRMS';
+  const subject = 'Password Changed Successfully - Coral Group HRMS';
   const preheader = 'Your Coral Group HRMS account password was updated.';
 
   const contentHtml = `
@@ -604,7 +622,7 @@ export const sendPasswordResetSuccessEmail = async (
     <p>This email confirms that the password for your <strong>Coral Group HRMS</strong> account (<strong style="color: #94cb3d;">${email}</strong>) was successfully changed.</p>
 
     <div class="info-card">
-      <h4>🔒 Security Audit Details:</h4>
+      <h4>Security Audit Details:</h4>
       <ul>
         <li><strong>Account Email:</strong> ${email}</li>
         <li><strong>Changed At:</strong> ${resetTime}</li>
@@ -627,5 +645,3 @@ export const sendPasswordResetSuccessEmail = async (
 
   await sendEmail(email, subject, html);
 };
-
-
