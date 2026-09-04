@@ -314,7 +314,7 @@ export const sendVerificationOTPEmail = async (
   email: string,
   otp: string
 ): Promise<void> => {
-  const expiryMins = process.env.OTP_EXPIRY_MINUTES || '15';
+  const expiryMins = process.env.OTP_EXPIRY_MINUTES || '5';
   const subject = '🔐 Verify Your Email - Coral Group HRMS';
   const preheader = `Your 6-digit verification code is ${otp}. Valid for ${expiryMins} minutes.`;
 
@@ -358,7 +358,7 @@ export const sendPasswordResetOTPEmail = async (
   email: string,
   otp: string
 ): Promise<void> => {
-  const expiryMins = process.env.OTP_EXPIRY_MINUTES || '15';
+  const expiryMins = process.env.OTP_EXPIRY_MINUTES || '5';
   const subject = '🔑 Password Reset OTP - Coral Group HRMS';
   const preheader = `Your 6-digit password reset code is ${otp}. Valid for ${expiryMins} minutes.`;
   const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
