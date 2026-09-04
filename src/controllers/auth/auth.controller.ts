@@ -330,7 +330,8 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+      path: '/',
       maxAge: rememberMe ? 30 * 24 * 60 * 60 * 1000 : 24 * 60 * 60 * 1000,
     });
 
@@ -363,7 +364,12 @@ export const logout = async (req: Request, res: Response, next: NextFunction) =>
       { isActive: false }
     );
 
-    res.clearCookie('refreshToken');
+    res.clearCookie('refreshToken', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+      path: '/',
+    });
 
     res.status(200).json({
       success: true,
@@ -571,7 +577,7 @@ export const resetPassword = async (req: Request, res: Response, next: NextFunct
     });
 
   } catch (error) {
-    next(error);
+    return next(error);
   }
 };
 

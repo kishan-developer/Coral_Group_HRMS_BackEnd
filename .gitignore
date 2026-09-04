@@ -38,10 +38,7 @@ coverage/
 # Temporary files
 tmp/
 temp/
-<<<<<<< HEAD
 
 # Large files (PDFs, etc.)
 src/BROCHURE/
 *.pdf
-=======
->>>>>>> 2eb72eb (Initial commit)

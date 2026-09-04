@@ -3,6 +3,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 import dotenv from 'dotenv';
 import path from 'path';
+import cookieParser from 'cookie-parser';
 
 import routes from './src/routes';
 import {
@@ -42,6 +43,7 @@ app.use(
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
 
 // Serve static files (brochures)
 const brochurePath = process.env.NODE_ENV === 'production' 

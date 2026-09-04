@@ -6,7 +6,7 @@ import dotenv from 'dotenv';
 import cookieParser from 'cookie-parser';
 
 import routes from './routes';
-import v1Routes from './routes/v1';
+
 import {
   errorMiddleware,
   notFoundMiddleware,
@@ -36,8 +36,6 @@ app.get('/', (_req: Request, res: Response) => {
   });
 });
 
-app.use('/api/v1', v1Routes);
-app.use('/v1', v1Routes);
 app.use('/api', routes);
 
 app.use(notFoundMiddleware);
