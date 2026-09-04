@@ -9,7 +9,7 @@ export class TicketsController {
       const { status, priority, category, assignedTo, companyId, search } = req.query;
 
       const filter: any = {};
-      if (status) filter.status = status;
+      if (status && status !== 'All' && status !== 'all') filter.status = status;
       if (priority) filter.priority = priority;
       if (category) filter.category = category;
       if (assignedTo) filter.assignedTo = assignedTo;
@@ -18,6 +18,7 @@ export class TicketsController {
         filter.$or = [
           { title: { $regex: search, $options: 'i' } },
           { description: { $regex: search, $options: 'i' } },
+          { ticketId: { $regex: search, $options: 'i' } },
         ];
       }
 
@@ -32,7 +33,6 @@ export class TicketsController {
         message: 'Tickets retrieved successfully',
       });
     } catch (error) {
-    return;
       next(error);
     }
   };
@@ -54,7 +54,6 @@ export class TicketsController {
         message: 'Ticket retrieved successfully',
       });
     } catch (error) {
-    return;
       next(error);
     }
   };
@@ -78,18 +77,12 @@ export class TicketsController {
         message: 'Ticket created successfully',
       });
     } catch (error) {
-    return;
       next(error);
     }
   };
 
   updateTicket = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const errors = validationResult(req);
-      if (!errors.isEmpty()) {
-        throw new AppError('Validation failed', 400, 'VALIDATION_ERROR', errors.array());
-      }
-
       const { id } = req.params;
       const updateData: any = { ...req.body };
 
@@ -109,7 +102,6 @@ export class TicketsController {
         message: 'Ticket updated successfully',
       });
     } catch (error) {
-    return;
       next(error);
     }
   };
@@ -128,7 +120,6 @@ export class TicketsController {
         message: 'Ticket deleted successfully',
       });
     } catch (error) {
-    return;
       next(error);
     }
   };

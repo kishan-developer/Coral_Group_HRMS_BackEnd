@@ -5,7 +5,7 @@ import { AppError } from './error.middleware';
 export interface AuthRequest extends Request {
   userId?: string;
   employeeId?: string;
-  role?: 'superadmin' | 'hr_manager' | 'accounts' | 'employee' | 'support';
+  role?: 'superadmin' | 'hr_manager' | 'accounts' | 'employee' | 'support' | 'user';
 }
 
 export const authMiddleware = (req: AuthRequest, _res: Response, next: NextFunction): void => {
@@ -29,8 +29,9 @@ export const authMiddleware = (req: AuthRequest, _res: Response, next: NextFunct
     const decoded = jwt.verify(token, secret) as {
       userId: string;
       employeeId?: string;
-      role: 'superadmin' | 'hr_manager' | 'accounts' | 'employee' | 'support';
+      role: 'superadmin' | 'hr_manager' | 'accounts' | 'employee' | 'support' | 'user';
     };
+
 
     console.log('Auth middleware - Token decoded successfully:', decoded);
     req.userId = decoded.userId;

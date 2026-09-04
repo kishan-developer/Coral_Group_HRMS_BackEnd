@@ -1,7 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { SupportRequest } from '../../models/support.model';
 import { AppError } from '../../middleware/error.middleware';
-import { validationResult } from 'express-validator';
 
 export class RequestsController {
   getAllRequests = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
@@ -9,7 +8,7 @@ export class RequestsController {
       const { status, type, priority, companyId } = req.query;
 
       const filter: any = {};
-      if (status) filter.status = status;
+      if (status && status !== 'all') filter.status = status;
       if (type) filter.type = type;
       if (priority) filter.priority = priority;
       if (companyId) filter.companyId = companyId;
@@ -24,18 +23,12 @@ export class RequestsController {
         message: 'Requests retrieved successfully',
       });
     } catch (error) {
-    return;
       next(error);
     }
   };
 
   createRequest = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const errors = validationResult(req);
-      if (!errors.isEmpty()) {
-        throw new AppError('Validation failed', 400, 'VALIDATION_ERROR', errors.array());
-      }
-
       const requestId = `REQ${Date.now()}`;
       const request = await SupportRequest.create({
         ...req.body,
@@ -48,7 +41,45 @@ export class RequestsController {
         message: 'Request created successfully',
       });
     } catch (error) {
-    return;
+      next(error);
+    }
+  };
+
+  updateRequestStatus = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const { id } = req.params;
+      const { status } = req.body;
+
+      const request = await SupportRequest.findByIdAndUpdate(id, { status }, { new: true });
+
+      if (!request) {
+        throw new AppError('Request not found', 404, 'REQUEST_NOT_FOUND');
+      }
+
+      res.status(200).json({
+        success: true,
+        data: request,
+        message: 'Request status updated successfully',
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  deleteRequest = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const { id } = req.params;
+      const request = await SupportRequest.findByIdAndDelete(id);
+
+      if (!request) {
+        throw new AppError('Request not found', 404, 'REQUEST_NOT_FOUND');
+      }
+
+      res.status(200).json({
+        success: true,
+        message: 'Request deleted successfully',
+      });
+    } catch (error) {
       next(error);
     }
   };

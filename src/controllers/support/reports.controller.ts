@@ -81,7 +81,6 @@ export class ReportsController {
         message: 'Reports retrieved successfully',
       });
     } catch (error) {
-    return;
       next(error);
     }
   };

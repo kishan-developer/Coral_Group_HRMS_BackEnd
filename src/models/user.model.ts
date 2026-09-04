@@ -4,9 +4,10 @@ export interface IUser extends Document {
   email: string;
   password: string;
   employeeId: string;
-  role: 'superadmin' | 'hr_manager' | 'accounts' | 'employee' | 'support';
+  role: 'superadmin' | 'hr_manager' | 'accounts' | 'employee' | 'support' | 'user';
   isActive: boolean;
   lastLogin?: Date;
+
   
   // Personal Information
   firstName: string;
@@ -124,7 +125,7 @@ export interface CreateUserInput {
   employeeId?: string;
   email: string;
   password: string;
-  role: 'superadmin' | 'hr_manager' | 'accounts' | 'employee' | 'support';
+  role: 'superadmin' | 'hr_manager' | 'accounts' | 'employee' | 'support' | 'user';
   firstName?: string;
   lastName?: string;
   phone?: string;
@@ -161,9 +162,10 @@ const userSchema = new Schema<IUser>(
     },
     role: {
       type: String,
-      enum: ['superadmin', 'hr_manager', 'accounts', 'employee', 'support'],
+      enum: ['superadmin', 'hr_manager', 'accounts', 'employee', 'support', 'user'],
       default: 'support',
     },
+
     isActive: {
       type: Boolean,
       default: true,

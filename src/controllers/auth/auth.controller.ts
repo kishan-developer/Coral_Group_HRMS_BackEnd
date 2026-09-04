@@ -14,7 +14,13 @@ import {
 } from '../../utils/jwt.util';
 import { hashPassword, comparePassword, validatePasswordStrength } from '../../utils/password.util';
 import { parseDeviceInfo, getDeviceName } from '../../utils/device.util';
-import { sendVerificationOTPEmail, sendPasswordResetOTPEmail } from '../../utils/email.utils';
+import {
+  sendVerificationOTPEmail,
+  sendPasswordResetOTPEmail,
+  sendLoginSuccessEmail,
+  sendPasswordResetSuccessEmail,
+} from '../../utils/email.utils';
+
 
 // Register - Step 1: Send OTP to email without creating user
 export const register = async (req: Request, res: Response, next: NextFunction) => {
@@ -271,9 +277,9 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
       { upsert: true, new: true }
     );
 
-    // Update last login
-    user.lastLogin = new Date();
-    await user.save();
+    // Update last login safely without triggering full document validation on legacy user fields
+    await User.updateOne({ _id: user._id }, { $set: { lastLogin: new Date() } });
+
 
     // Log successful login
     await LoginHistory.create({
@@ -285,7 +291,24 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
       sessionId: session._id,
     });
 
+    // Send security notification email asynchronously
+    (async () => {
+      try {
+        const userName = `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.email;
+        const deviceString = `${deviceInfo.browser || 'Browser'} on ${deviceInfo.os || 'Device'} (${deviceInfo.device || 'Desktop'})`;
+        const loginTimeStr = new Date().toLocaleString('en-IN', {
+          timeZone: 'Asia/Kolkata',
+          dateStyle: 'full',
+          timeStyle: 'medium',
+        });
+        await sendLoginSuccessEmail(user.email, userName, ipAddress, deviceString, loginTimeStr);
+      } catch (err) {
+        console.error('Failed to send login notification email:', err);
+      }
+    })();
+
     // Console log user details after successful login
+
     console.log('=== USER LOGIN SUCCESS ===');
     console.log('User ID:', user._id.toString());
     console.log('Email:', user.email);
@@ -502,9 +525,8 @@ export const resetPassword = async (req: Request, res: Response, next: NextFunct
     // Hash new password
     const hashedPassword = await hashPassword(newPassword);
 
-    // Update password
-    user.password = hashedPassword;
-    await user.save();
+    // Update password safely without failing full document validation on legacy users
+    await User.updateOne({ _id: user._id }, { $set: { password: hashedPassword } });
 
     // Deactivate all sessions (force re-login)
     await Session.updateMany(
@@ -512,10 +534,25 @@ export const resetPassword = async (req: Request, res: Response, next: NextFunct
       { isActive: false }
     );
 
+    // Send password reset success email asynchronously
+    (async () => {
+      try {
+        const resetTimeStr = new Date().toLocaleString('en-IN', {
+          timeZone: 'Asia/Kolkata',
+          dateStyle: 'full',
+          timeStyle: 'medium',
+        });
+        await sendPasswordResetSuccessEmail(email, resetTimeStr);
+      } catch (err) {
+        console.error('Failed to send password reset success email:', err);
+      }
+    })();
+
     res.status(200).json({
       success: true,
       message: 'Password reset successful. Please login with your new password.',
     });
+
   } catch (error) {
     next(error);
   }
@@ -524,19 +561,35 @@ export const resetPassword = async (req: Request, res: Response, next: NextFunct
 // Resend OTP
 export const resendOTP = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { userId, type } = req.body;
+    const { userId, email, type } = req.body;
+
+    let targetUserId = userId;
+    let targetEmail = email;
+
+    if (!targetUserId && targetEmail) {
+      const user = await User.findOne({ email: targetEmail });
+      if (user) {
+        targetUserId = user._id;
+      }
+    }
+
+    if (!targetUserId && !targetEmail) {
+      throw new AppError('User ID or Email is required', 400, 'MISSING_FIELDS');
+    }
 
     // Delete previous unverified OTPs
-    await OTP.deleteMany({
-      userId,
-      type,
-      isVerified: false,
-    });
+    if (targetUserId) {
+      await OTP.deleteMany({
+        userId: targetUserId,
+        type,
+        isVerified: false,
+      });
+    }
 
     // Generate new OTP
     const otp = generateOTP();
     await OTP.create({
-      userId,
+      userId: targetUserId,
       type,
       otp,
       expiresAt: new Date(Date.now() + 5 * 60 * 1000), // 5 minutes
@@ -544,12 +597,12 @@ export const resendOTP = async (req: Request, res: Response, next: NextFunction)
 
     // Send OTP email based on type
     if (type === 'email_verification') {
-      const user = await User.findById(userId);
+      const user = targetUserId ? await User.findById(targetUserId) : await User.findOne({ email: targetEmail });
       if (user) {
         await sendVerificationOTPEmail(user.email, otp);
       }
     } else if (type === 'password_reset') {
-      const user = await User.findById(userId);
+      const user = targetUserId ? await User.findById(targetUserId) : await User.findOne({ email: targetEmail });
       if (user) {
         await sendPasswordResetOTPEmail(user.email, otp);
       }
@@ -563,3 +616,4 @@ export const resendOTP = async (req: Request, res: Response, next: NextFunction)
     next(error);
   }
 };
+

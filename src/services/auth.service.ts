@@ -14,14 +14,15 @@ interface RegisterData {
   email: string;
   phone: string;
   password: string;
-  role?: 'superadmin' | 'hr_manager' | 'accounts' | 'employee' | 'support';
+  role?: 'superadmin' | 'hr_manager' | 'accounts' | 'employee' | 'support' | 'user';
 }
 
 interface TokenPayload {
   userId: string;
   employeeId: string;
-  role: 'superadmin' | 'hr_manager' | 'accounts' | 'employee' | 'support';
+  role: 'superadmin' | 'hr_manager' | 'accounts' | 'employee' | 'support' | 'user';
 }
+
 
 interface AuthTokens {
   accessToken: string;

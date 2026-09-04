@@ -3,6 +3,8 @@ import { Leave } from '../../models/leave.model';
 import { User } from '../../models/user.model';
 import { AppError } from '../../middleware/error.middleware';
 import { validationResult } from 'express-validator';
+import { sendLeaveApprovalEmail, sendLeaveRequestEmail } from '../../utils/email.utils';
+
 
 export class LeaveController {
   getAllLeaves = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
@@ -95,13 +97,30 @@ export class LeaveController {
         status: 'Pending',
       });
 
+      // Send notification email asynchronously
+      (async () => {
+        try {
+          const empUser = (await User.findOne({ employeeId: targetEmployeeId })) || (await User.findById(employeeId));
+          const empName = empUser ? `${empUser.firstName} ${empUser.lastName}` : `Employee (${targetEmployeeId})`;
+          const managerEmail = process.env.HR_EMAIL || process.env.SMTP_USER || 'hr@coralgroup.com';
+          await sendLeaveRequestEmail(
+            managerEmail,
+            empName,
+            leaveType,
+            new Date(fromDate).toLocaleDateString('en-IN'),
+            new Date(toDate).toLocaleDateString('en-IN')
+          );
+        } catch (err) {
+          console.error('Failed to send leave request email notification:', err);
+        }
+      })();
+
       res.status(201).json({
         success: true,
         data: leave,
         message: 'Leave request created successfully',
       });
     } catch (error) {
-    return;
       next(error);
     }
   };
@@ -138,7 +157,6 @@ export class LeaveController {
         message: 'Leave request updated successfully',
       });
     } catch (error) {
-    return;
       next(error);
     }
   };
@@ -163,13 +181,25 @@ export class LeaveController {
         throw new AppError('Leave request not found', 404, 'LEAVE_NOT_FOUND');
       }
 
+      // Send approval notification email asynchronously
+      (async () => {
+        try {
+          const empUser = await User.findOne({ employeeId: leave.employeeId });
+          if (empUser && empUser.email) {
+            const empName = `${empUser.firstName} ${empUser.lastName}`;
+            await sendLeaveApprovalEmail(empUser.email, empName, leave.leaveType, 'Approved', managerNotes);
+          }
+        } catch (err) {
+          console.error('Failed to send leave approval email notification:', err);
+        }
+      })();
+
       res.status(200).json({
         success: true,
         data: leave,
         message: 'Leave request approved successfully',
       });
     } catch (error) {
-    return;
       next(error);
     }
   };
@@ -194,16 +224,29 @@ export class LeaveController {
         throw new AppError('Leave request not found', 404, 'LEAVE_NOT_FOUND');
       }
 
+      // Send rejection notification email asynchronously
+      (async () => {
+        try {
+          const empUser = await User.findOne({ employeeId: leave.employeeId });
+          if (empUser && empUser.email) {
+            const empName = `${empUser.firstName} ${empUser.lastName}`;
+            await sendLeaveApprovalEmail(empUser.email, empName, leave.leaveType, 'Rejected', rejectionReason || managerNotes);
+          }
+        } catch (err) {
+          console.error('Failed to send leave rejection email notification:', err);
+        }
+      })();
+
       res.status(200).json({
         success: true,
         data: leave,
         message: 'Leave request rejected successfully',
       });
     } catch (error) {
-    return;
       next(error);
     }
   };
+
 
   cancelLeave = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {

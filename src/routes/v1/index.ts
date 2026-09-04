@@ -34,6 +34,7 @@ import dashboardRoutes from './dashboard.routes';
 import attendanceMachinesRoutes from './attendance-machines.routes';
 import queryRoutes from './query.routes';
 import brochureRoutes from './brochure.routes';
+import emailRoutes from './email.routes';
 
 const router = Router();
 
@@ -72,5 +73,6 @@ router.use('/dashboard', dashboardRoutes);
 router.use('/attendance-machines', attendanceMachinesRoutes);
 router.use('/queries', queryRoutes);
 router.use('/brochure', brochureRoutes);
+router.use('/email', emailRoutes);
 
 export default router;

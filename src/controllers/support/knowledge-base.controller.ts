@@ -1,18 +1,15 @@
 import { Request, Response, NextFunction } from 'express';
 import { KnowledgeBase } from '../../models/support.model';
 import { AppError } from '../../middleware/error.middleware';
-import { validationResult } from 'express-validator';
 
 export class KnowledgeBaseController {
   getAllKnowledgeBase = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const { category, isPublished, companyId, search, tags } = req.query;
+      const { category, search, companyId } = req.query;
 
       const filter: any = {};
-      if (category) filter.category = category;
-      if (isPublished !== undefined) filter.isPublished = isPublished === 'true';
+      if (category && category !== 'All') filter.category = category;
       if (companyId) filter.companyId = companyId;
-      if (tags) filter.tags = { $in: (tags as string).split(',') };
       if (search) {
         filter.$or = [
           { title: { $regex: search, $options: 'i' } },
@@ -30,18 +27,12 @@ export class KnowledgeBaseController {
         message: 'Knowledge base articles retrieved successfully',
       });
     } catch (error) {
-    return;
       next(error);
     }
   };
 
   createKnowledgeArticle = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const errors = validationResult(req);
-      if (!errors.isEmpty()) {
-        throw new AppError('Validation failed', 400, 'VALIDATION_ERROR', errors.array());
-      }
-
       const articleId = `KB${Date.now()}`;
       const article = await KnowledgeBase.create({
         ...req.body,
@@ -54,7 +45,43 @@ export class KnowledgeBaseController {
         message: 'Knowledge base article created successfully',
       });
     } catch (error) {
-    return;
+      next(error);
+    }
+  };
+
+  updateKnowledgeArticle = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const { id } = req.params;
+      const article = await KnowledgeBase.findByIdAndUpdate(id, req.body, { new: true });
+
+      if (!article) {
+        throw new AppError('Knowledge base article not found', 404, 'ARTICLE_NOT_FOUND');
+      }
+
+      res.status(200).json({
+        success: true,
+        data: article,
+        message: 'Knowledge base article updated successfully',
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  deleteKnowledgeArticle = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const { id } = req.params;
+      const article = await KnowledgeBase.findByIdAndDelete(id);
+
+      if (!article) {
+        throw new AppError('Knowledge base article not found', 404, 'ARTICLE_NOT_FOUND');
+      }
+
+      res.status(200).json({
+        success: true,
+        message: 'Knowledge base article deleted successfully',
+      });
+    } catch (error) {
       next(error);
     }
   };

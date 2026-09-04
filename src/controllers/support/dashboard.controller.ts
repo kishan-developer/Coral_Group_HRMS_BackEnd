@@ -51,17 +51,17 @@ export class DashboardController {
             total: totalTickets,
             open: openTickets,
             inProgress: inProgressTickets,
-            resolved: totalTickets - openTickets - inProgressTickets,
+            resolved: Math.max(0, totalTickets - openTickets - inProgressTickets),
           },
           requests: {
             total: totalRequests,
             pending: pendingRequests,
-            completed: totalRequests - pendingRequests,
+            completed: Math.max(0, totalRequests - pendingRequests),
           },
           knowledgeBase: {
             total: totalKnowledgeArticles,
             published: publishedArticles,
-            draft: totalKnowledgeArticles - publishedArticles,
+            draft: Math.max(0, totalKnowledgeArticles - publishedArticles),
           },
           announcements: {
             total: totalAnnouncements,
@@ -78,7 +78,6 @@ export class DashboardController {
         message: 'Dashboard stats retrieved successfully',
       });
     } catch (error) {
-    return;
       next(error);
     }
   };
